@@ -10,7 +10,7 @@ export default class MeshPlane extends PositionManager {
     private _gl: WebGLRenderingContext;
     private _matrix: number[];
 
-    constructor(dat: {width: number, height: number, widthSegments:number, heightSegments:number}, gl: WebGLRenderingContext) {
+    constructor(dat: { width: number, height: number, widthSegments: number, heightSegments: number }, gl: WebGLRenderingContext) {
         super()
         this._gl = gl
         var left = 0;
@@ -20,7 +20,7 @@ export default class MeshPlane extends PositionManager {
         var near = 400;
         var far = -1000;
         this._matrix = this.orthographic(left, right, bottom, top, near, far);
-        if (dat.width !== undefined && dat.height !== undefined ) {
+        if (dat.width !== undefined && dat.height !== undefined) {
             console.log(this._position)
 
             const width_half = dat.width / 2;
@@ -62,9 +62,7 @@ export default class MeshPlane extends PositionManager {
             }
 
             for (let iy = 0; iy < gridY; iy++) {
-
                 for (let ix = 0; ix < gridX; ix++) {
-
                     const a = ix + gridX1 * iy;
                     const b = ix + gridX1 * (iy + 1);
                     const c = (ix + 1) + gridX1 * (iy + 1);
@@ -78,10 +76,10 @@ export default class MeshPlane extends PositionManager {
             }
 
 
-            console.log(indices,vertices)
+            console.log(indices, vertices)
         }
     }
-   
+
     renderMe(prg: WebGLProgram) {
         this._gl.useProgram(prg);
 
@@ -128,7 +126,7 @@ export default class MeshPlane extends PositionManager {
             colorLocation, size, type, normalize, stride, offset);
 
         this._gl.uniformMatrix4fv(matrixLocation, false, this._matrix);
-            // console.log(this._matrix)
+        // console.log(this._matrix)
         // Draw the geometry.
         var primitiveType = this._gl.TRIANGLES;
         var offset = 0;

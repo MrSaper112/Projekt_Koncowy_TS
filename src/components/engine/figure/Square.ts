@@ -9,23 +9,22 @@ export default class Square extends PositionManager {
     public rotation: vector3D;
     private _gl: WebGLRenderingContext;
     private _matrix: number[];
+    private _projectMatrix: number[];
+    private _rotation: vector3D;
+    private _scale: vector3D;
+    private _fudge: number;
     private _cubeVertexPositions: Float32Array;
     private _cubeVertexNormals: Float32Array;
     private _cubeVertexTexcoords: Float32Array;
     private _cubeVertexIndices: Uint16Array;
     constructor(position: vector3D, gl: WebGLRenderingContext) {
         super()
-        console.log(position.x !== null && position.y !== null && position.z !== null)
+        this._rotation = { x: 0, y: 0, z: 0 }
+        this._scale = { x: 0, y: 0, z: 0 }
+        this._fudge = -1
         this._gl = gl
-        var left = 0;
-        var right = gl.canvas.clientWidth;
-        var bottom = gl.canvas.clientHeight;
-        var top = 0;
-        var near = 400;
-        var far = -1000;
-        this._matrix = this.orthographic(left, right, bottom, top, near, far);
+
         if (position.x !== null && position.y !== null && position.z !== null) {
-            console.log(this._position)
             this._position = position
             let [x, y, z, width] = [this._position.x, this._position.y, this._position.z, this._position.width]
             this._positionFloat32Array = new Float32Array([
@@ -34,11 +33,11 @@ export default class Square extends PositionManager {
                 x, y + width, z,
                 x + width, y, z,
                 x, y + width, z,
-                x + width, y + width,z,
+                x + width, y + width, z,
                 x + width, y, z,
 
                 //back
-                x, y, z+width,
+                x, y, z + width,
                 x, y + width, z + width,
                 x + width, y, z + width,
                 x, y + width, z + width,
@@ -62,9 +61,9 @@ export default class Square extends PositionManager {
                 x + width, y + width, z + width,
 
                 //Top 
-                x,y,z,
+                x, y, z,
                 x, y, z + width,
-                x + width,y,z,
+                x + width, y, z,
 
                 x, y, z + width,
                 x + width, y, z + width,
@@ -73,7 +72,7 @@ export default class Square extends PositionManager {
                 //Bottom
                 x, y + width, z,
                 x, y + width, z + width,
-                x + width, y+width, z,
+                x + width, y + width, z,
 
                 x, y + width, z + width,
                 x + width, y + width, z + width,
@@ -210,21 +209,47 @@ export default class Square extends PositionManager {
         }
     }
     rotateMe(vect: vector3D) {
-        this._matrix = this.xRotate(this._matrix, vect.x);
-        this._matrix = this.yRotate(this._matrix, vect.y);
-        this._matrix = this.zRotate(this._matrix, vect.z);
-        console.log(this._matrix,vect);
+        this._rotation.x += vect.x
+        this._rotation.y += vect.y
+        this._rotation.z += vect.z
 
     }
     translateMe(vect: vector3D) {
-        this._matrix = this.translate(this._matrix, vect.x, vect.y, vect.z);
-
+        this._position.x += vect.x
+        this._position.y += vect.y
+        this._position.z += vect.z
+        // this._matrix = this.translate(vect.x, vect.y, vect.z);
     }
     scaleMe(vect: vector3D) {
-        this._matrix = this.scale(this._matrix, vect.x, vect.y, vect.z);
-
+        // this._matrix = this.scale(this._matrix, vect.x, vect.y, vect.z);
+        this._scale.x = vect.x
+        this._scale.y = vect.y
+        this._scale.z = vect.z
     }
-    renderMe(prg: WebGLProgram) {
+    fudge(f: number) {
+        this._fudge += f
+    }
+
+    renderMe(prg: WebGLProgram, uMatrix: Array<number>) {
+        // this._matrix = this.makeZToWMatrix(this._fudge);
+        // this._matrix = this.multiply(this._matrix, this.perspective(50, this._gl.canvas.clientWidth / this._gl.canvas.clientHeight, 1e-4, 1e4));
+        // this._matrix = this.translate(this._matrix, this._position.x, this._position.y, this._position.z);
+        // this._matrix = this.xRotate(this._matrix, this._rotation.x);
+        // this._matrix = this.yRotate(this._matrix, this._rotation.y);
+        // this._matrix = this.zRotate(this._matrix, this._rotation.z);
+        // this._matrix = this.scale(this._matrix, this._scale.x, this._scale.y, this._scale.z);
+
+        // this._matrix = this.projection(this._gl.canvas.clientWidth, this._gl.canvas.clientHeight, 4000);
+
+        this._projectMatrix = this.perspective(80, this._gl.canvas.clientWidth / this._gl.canvas.clientHeight, 1e-4, 1e4)
+        // this._matrix = this.orthographic(0, 0, 0, 0, 0, 0)
+        this._matrix = this.createMatrix()
+        this._matrix = this.translate(this._matrix, this._position.x, this._position.y, this._position.z);
+        this._matrix = this.xRotate(this._matrix, this._rotation.x);
+        this._matrix = this.yRotate(this._matrix, this._rotation.y);
+        this._matrix = this.zRotate(this._matrix, this._rotation.z);
+        this._matrix = this.scale(this._matrix, this._scale.x, this._scale.y, this._scale.z);
+
         this._gl.useProgram(prg);
 
         var positionLocation = this._gl.getAttribLocation(prg, "a_position");
@@ -233,7 +258,10 @@ export default class Square extends PositionManager {
 
         this._gl.enableVertexAttribArray(positionLocation);
 
-
+        const mvMatrix = this.multiply(uMatrix, this._matrix)
+        const finalMatrix = this.multiply(this._projectMatrix, mvMatrix)
+        const test = this.multiply(this._projectMatrix, this._matrix)
+        // console.log(finalMatrix)
         //Bind Position
         var positionBuffer = this._gl.createBuffer();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, positionBuffer);
@@ -248,8 +276,6 @@ export default class Square extends PositionManager {
         this._gl.vertexAttribPointer(
             positionLocation, size, type, normalize, stride, offset);
 
-
-        //Bind color buffer
 
         // Turn on the color attribute
         this._gl.enableVertexAttribArray(colorLocation);
@@ -269,8 +295,7 @@ export default class Square extends PositionManager {
         this._gl.vertexAttribPointer(
             colorLocation, size, type, normalize, stride, offset);
 
-        this._gl.uniformMatrix4fv(matrixLocation, false, this._matrix);
-            // console.log(this._matrix)
+        this._gl.uniformMatrix4fv(matrixLocation, false, mvMatrix);
         // Draw the geometry.
         var primitiveType = this._gl.TRIANGLES;
         var offset = 0;
