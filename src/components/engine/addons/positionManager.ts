@@ -2,24 +2,47 @@ export class PositionManager {
     constructor() {
         console.log("PositionManager")
     }
-    translate(m: Float32Array, translateX: number, translateY: number, translateZ: number) {
+    radToDeg(r: number) {
+        return r * 180 / Math.PI;
+    }
+
+    degToRad(d: number) {
+        return d * Math.PI / 180;
+    }
+
+    translate(m: Array<number>, translateX: number, translateY: number, translateZ: number) {
         return this.multiply(m, this.translation(translateX, translateY, translateZ));
     }
 
-    xRotate(m: Float32Array, angleInRadians: number) {
-        return this.multiply(m, this.xRotation(angleInRadians));
+    xRotate(m: Array<number>, angleInRadians: number) {
+        return this.multiply(m, this.xRotation(this.degToRad(angleInRadians)));
     }
-    yRotate(m: Float32Array, angleInRadians: number) {
-        return this.multiply(m, this.yRotation(angleInRadians));
-    }
-
-    zRotate(m: Float32Array, angleInRadians: number) {
-        return this.multiply(m, this.zRotation(angleInRadians));
+    yRotate(m: Array<number>, angleInRadians: number) {
+        return this.multiply(m, this.yRotation(this.degToRad(angleInRadians)));
     }
 
-    scale(m: Float32Array, scaleX: number, scaleY: number, scaleZ: number) {
+    zRotate(m: Array<number>, angleInRadians: number) {
+        console.log(angleInRadians)
+        console.log(this.multiply(m, this.zRotation(this.degToRad(angleInRadians))))
+        return this.multiply(m, this.zRotation(this.degToRad(angleInRadians)));
+    }
+
+    scale(m: Array<number>, scaleX: number, scaleY: number, scaleZ: number) {
         return this.multiply(m, this.scaling(scaleX, scaleY, scaleZ));
     }
+
+    orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number) {
+    return [
+        2 / (right - left), 0, 0, 0,
+        0, 2 / (top - bottom), 0, 0,
+        0, 0, 2 / (near - far), 0,
+
+        (left + right) / (left - right),
+        (bottom + top) / (bottom - top),
+        (near + far) / (near - far),
+        1
+    ]
+}
     projection(width: number, height: number, depth: number) {
         return [
             2 / width, 0, 0, 0,
@@ -28,7 +51,7 @@ export class PositionManager {
             -1, 1, 0, 1,
         ];
     }
-    translation(translateX: number, translateY: number, translateZ: number) {
+    private translation(translateX: number, translateY: number, translateZ: number) {
         return [
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -37,9 +60,10 @@ export class PositionManager {
         ];
     }
 
-    xRotation(angleInRadians: number) {
+    private xRotation(angleInRadians: number) {
         var c = Math.cos(angleInRadians);
         var s = Math.sin(angleInRadians);
+        
         return [
             1, 0, 0, 0,
             0, c, s, 0,
@@ -48,7 +72,7 @@ export class PositionManager {
         ];
     }
 
-    yRotation(angleInRadians: number) {
+    private yRotation(angleInRadians: number) {
         var c = Math.cos(angleInRadians);
         var s = Math.sin(angleInRadians);
         return [
@@ -59,9 +83,14 @@ export class PositionManager {
         ];
     }
 
-    zRotation(angleInRadians: number) {
+    private zRotation(angleInRadians: number) {
         var c = Math.cos(angleInRadians);
         var s = Math.sin(angleInRadians);
+        console.log(angleInRadians)
+        console.log(c, s, 0, 0,
+            -s, c, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1)
         return [
             c, s, 0, 0,
             -s, c, 0, 0,
@@ -70,7 +99,7 @@ export class PositionManager {
         ];
     }
 
-    scaling(scaleX: number, scaleY: number, scaleZ: number) {
+    private scaling(scaleX: number, scaleY: number, scaleZ: number) {
         return [
             scaleX, 0, 0, 0,
             0, scaleY, 0, 0,
@@ -79,7 +108,7 @@ export class PositionManager {
         ];
     }
     //This operate on matrix 4x4 https://www.math10.com/en/algebra/matrices/determinant.html
-    multiply(a: Float32Array, b: Array<number>) {
+    private multiply(a: Array<number>, b: Array<number>) {
         var b00 = b[0 * 4 + 0];
         var b01 = b[0 * 4 + 1];
         var b02 = b[0 * 4 + 2];
