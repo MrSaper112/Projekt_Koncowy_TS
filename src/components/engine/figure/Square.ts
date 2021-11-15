@@ -267,7 +267,7 @@ export default class Square extends PositionManager {
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, positionBuffer);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, this._positionFloat32Array, this._gl.STATIC_DRAW);
 
-
+        console.log(positionBuffer)
         var size = 3;          // 3 components per iteration
         var type = this._gl.FLOAT;   // the data is 32bit floats
         var normalize = false; // don't normalize the data

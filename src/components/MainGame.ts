@@ -1,4 +1,4 @@
-import { MainEngine } from "./engine/MainEngine";
+import { MainEngine } from "./engine/MainEngine2";
 import { canvas } from "./StaticItems";
 
 export default class MainGame extends MainEngine {
