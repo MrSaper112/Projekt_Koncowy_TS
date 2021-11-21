@@ -1,6 +1,5 @@
-import FigureInterface from "../addons/FiguresInterFace";
+import FigureInterface, { vector3D } from "../addons/FiguresInterFace";
 import Matrix4D from "../addons/Matrix4D";
-import { vector3D } from "../addons/positionManager";
 import { programArray } from "../addons/webGLutils";
 
 export class BulbLight implements FigureInterface {

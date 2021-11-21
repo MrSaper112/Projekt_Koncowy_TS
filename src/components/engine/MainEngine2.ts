@@ -1,31 +1,25 @@
 import { fps } from "../StaticItems";
-import * as vertexShader from './assets/vertexShader.txt';
-import * as fragmetalShader from './assets/fragmetalShader.txt';
 import webGLutils, { programArray } from "./addons/webGLutils";
-import Square from "./figure/Square";
-import { PositionManager, vector3D } from "./addons/positionManager";
 import MeshPlane from "./figure/MeshPlane";
 import Camera from "./figure/Camera";
 import sliderManager from "./addons/sliderApi";
 import Cube from "./figure/NewCube";
+import Materials from "./figure/Materials";
 // const vertexShader = require('./assets/vertexShader.txt');
 // const fragmentaShader = require('./assets/fragmentaShader.txt');
+import dirtJgp from '../textures/dirt.jpg'
 
 export class MainEngine {
     public _cnv: HTMLCanvasElement
-    private _shaders = { vertex: String, fragmetal: String };
     private _program: programArray
     private _webGLutils: webGLutils
-    private _positionManager: PositionManager
     private _camera: Camera
     public square: Array<Cube>
     time: number
     constructor(plane: HTMLCanvasElement) {
         this._cnv = plane
         // console.log(vertexShader.default, fragmetalShader.default)
-        this._shaders = { vertex: vertexShader.default, fragmetal: fragmetalShader.default }
-        this._webGLutils = new webGLutils()
-        this._positionManager = new PositionManager()
+        this._webGLutils 
         this.square = []
         this.time = 0
         this.createCanvas()
@@ -52,7 +46,7 @@ export class MainEngine {
         this.draw()
     }
 
-    draw() {
+    async draw() {
         if (this._cnv) {
             //Get context from webgl!
             const gl = this._cnv.getContext("webgl");
@@ -62,8 +56,11 @@ export class MainEngine {
                 alert("Unable to initialize WebGL. Your browser or machine may not support it.");
                 return;
             }
+            this._webGLutils = new webGLutils()
             const sliderMan = new sliderManager()
+
             this._program = this._webGLutils.newProgram(gl);
+            console.log(this._program)
             let f = () =>{ 
                 return Math.floor(Math.random() * (50 + 10 + 1) -10)
             }
@@ -78,7 +75,9 @@ export class MainEngine {
 
             for(let x  = 0 ; x < 100 ;x++){
                 let newCube = new Cube(gl, { x: f(), y: f(), z: f()  });
-                newCube._scale = { x: fS(), y: fS(), z: fS() };
+                if (Math.random() < 0.5) newCube._material = new Materials(gl, { color: '#ff00AA' })
+                else newCube._material = new Materials(gl, { texture: dirtJgp, })
+
                 this.square.push(newCube);
 
             }
@@ -109,7 +108,7 @@ export class MainEngine {
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
                 this.square.forEach((square) =>{
                     square.draw(this._program);
-                    square.updateRotation({ x: 5, y: 10, z: 1 });
+                              square.updateRotation({ x: 0, y: 0, z: 360});
                 })
                 // this.square[0].draw(this._program);
                 // this.square[1].draw(this._program);
