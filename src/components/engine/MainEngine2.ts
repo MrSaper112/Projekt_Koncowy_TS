@@ -8,6 +8,7 @@ import Materials from "./figure/Materials";
 // const vertexShader = require('./assets/vertexShader.txt');
 // const fragmentaShader = require('./assets/fragmentaShader.txt');
 import dirtJgp from '../textures/dirt.jpg'
+import FPSIndicator from "./addons/FpsIndicator";
 
 export class MainEngine {
     public _cnv: HTMLCanvasElement
@@ -15,20 +16,18 @@ export class MainEngine {
     private _webGLutils: webGLutils
     private _camera: Camera
     public square: Array<Cube>
+    private _fps: FPSIndicator
     time: number
     constructor(plane: HTMLCanvasElement) {
         this._cnv = plane
         // console.log(vertexShader.default, fragmetalShader.default)
-        this._webGLutils 
+        this._webGLutils
         this.square = []
         this.time = 0
         this.createCanvas()
-        this.render()
+        requestAnimationFrame(()=>this.render())
     }
-    async ininitialize() {
-        await this.createCanvas()
-        await this.render()
-    }
+
     async createCanvas() {
         let body = document.querySelectorAll("body")[0].children as HTMLCollection
         for (let x = 0; x < body.length; x++) {
@@ -58,23 +57,24 @@ export class MainEngine {
             }
             this._webGLutils = new webGLutils()
             const sliderMan = new sliderManager()
-
+            this._fps = new FPSIndicator()
+            
             this._program = this._webGLutils.newProgram(gl);
             console.log(this._program)
-            let f = () =>{ 
-                return Math.floor(Math.random() * (50 + 10 + 1) -10)
+            let f = () => {
+                return Math.floor(Math.random() * (50 + 10 + 1) - 10)
             }
             let fS = () => {
-                return Math.floor(Math.random() * (4 -1 + 1) + 1)
+                return Math.floor(Math.random() * (4 - 1 + 1) + 1)
             }
-            let newCube = new Cube(gl,{x:5, y:-2,z:-3});
-            newCube._scale = {x:3, y:3, z:3};
+            let newCube = new Cube(gl, { x: 5, y: -2, z: -3 });
+            newCube._scale = { x: 3, y: 3, z: 3 };
             sliderMan.createSlider(-100, 100, 0.1, 0, "Camera x", (e: number) => { newCube.updateX(e) });
             sliderMan.createSlider(-100, 100, 0.1, 0, "Camera z", (e: number) => { newCube.updateZ(e) });
             sliderMan.createSlider(-100, 100, 0.1, 0, "Camera y", (e: number) => { newCube.updateY(e) });
 
-            for(let x  = 0 ; x < 100 ;x++){
-                let newCube = new Cube(gl, { x: f(), y: f(), z: f()  });
+            for (let x = 0; x < 10; x++) {
+                let newCube = new Cube(gl, { x: f(), y: f(), z: f() });
                 if (Math.random() < 0.5) newCube._material = new Materials(gl, { color: '#ff00AA' })
                 else newCube._material = new Materials(gl, { texture: dirtJgp, })
 
@@ -94,39 +94,35 @@ export class MainEngine {
 
     }
 
-    async render() {
-        // let now *= 0.001;  // convert to seconds
-        // const deltaTime = now - then;
-        // let then = now;
-        setTimeout(async () => {
-                const gl = this._cnv.getContext("webgl");
-                gl.clearColor(0.0, 0.0, 0.0, 0.3);  // Clear to black, fully opaque
-                gl.enable(gl.DEPTH_TEST);           // Enable depth testing
+    render(): number {
 
-                // Clear the canvas before we start drawing on it.
+        const gl = this._cnv.getContext("webgl");
+        gl.clearColor(0.0, 0.0, 0.0, 0.3);  // Clear to black, fully opaque
+        gl.enable(gl.DEPTH_TEST);           // Enable depth testing
 
-                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-                this.square.forEach((square) =>{
-                    square.draw(this._program);
-                              square.updateRotation({ x: 0, y: 0, z: 360});
-                })
-                // this.square[0].draw(this._program);
-                // this.square[1].draw(this._program);
-                // // if (this.time === 2) {
-                // //     this.square[0].rotateMe({ x: 1, y: 1, z: 1 });
-                // //     this._camera.updateX(1)
-                // //     this.time = 0
-                // // }
-                // this.square[0].rotateMe({ x: 3, y: 3, z: 1 });
-                // this.square[1].rotateMe({ x: 30, y: 30, z: 1 });
-                this.time++
-                // console.log("Czas leci!")
-    
+        // Clear the canvas before we start drawing on it.
 
-                this.render()
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this.square.forEach((square) => {
+            square.draw(this._program);
+            square.updateRotation({ x: 0, y: 0, z: 360 });
+        })
+        let num = Date.now()
+        this._fps.render(num)
+        // this.square[0].draw(this._program);
+        // this.square[1].draw(this._program);
+        // // if (this.time === 2) {
+        // //     this.square[0].rotateMe({ x: 1, y: 1, z: 1 });
+        // //     this._camera.updateX(1)
+        // //     this.time = 0
+        // // }
+        // this.square[0].rotateMe({ x: 3, y: 3, z: 1 });
+        // this.square[1].rotateMe({ x: 30, y: 30, z: 1 });
+        this.time++
+        // console.log("Czas leci!")
 
-            
-        }, 1000 / fps)
+
+        return requestAnimationFrame(() => this.render())
     }
 
 }

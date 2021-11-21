@@ -11,7 +11,7 @@ export default class sliderManager {
         const box = document.createElement("div")
         box.style.display = "flex"
         const a = document.createElement("a")
-        a.style.fontSize = "30px"
+        a.style.fontSize = "20px"
         a.style.color = "black"
         a.style.fontFamily = "Arial, Helvetica, sans-serif"
         a.innerText = name
