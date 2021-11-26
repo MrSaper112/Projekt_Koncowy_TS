@@ -1,7 +1,7 @@
 // import { Program } from "../../../../node_modules/typescript/lib/typescript"
 
 import FigureInterface, { vector3D } from "../addons/FiguresInterFace"
-import KeyboardAndMouse from "../addons/KeyboardAndMouse";
+import {KeyboardAndMouse, Keys} from "../addons/KeyboardAndMouse";
 import Matrix4D from "../addons/Matrix4D";
 import { programArray } from "../addons/webGLutils";
 import Materials from "./Materials";
@@ -20,7 +20,8 @@ export default class Camera implements FigureInterface {
     _viewMatrix?: Array<number>
     _keyboardAndMouseManager?: KeyboardAndMouse
     _acceleration?: number
-    constructor(gl: WebGLRenderingContext, data: { fov?: number, aspect?: number, zNear?: number, zFar?: number, acceleration?: number }) {
+    _keys: Keys
+    constructor(gl: WebGLRenderingContext,data: { fov?: number, aspect?: number, zNear?: number, zFar?: number, acceleration?: number, keys?:Keys }) {
         this._gl = gl;
         this._fov = (data.fov || 60) * Math.PI / 180;
         this._aspect = this._gl.canvas.clientWidth / this._gl.canvas.clientHeight;
@@ -30,8 +31,12 @@ export default class Camera implements FigureInterface {
         this._scale = { x: 1, y: 1, z: 1 }
         this._rotationInDeg = { x: 0, y: 0, z: 0 }
         this._vector = { x: 0, y: 0, z: 0 }
-        this._acceleration = data.acceleration || 5
-        this._keyboardAndMouseManager = new KeyboardAndMouse({ keyboardWork: true, keys: { KeyS: false, KeyW: false, KeyA: false, KeyD: false } })
+        this._acceleration = data.acceleration || 10
+        this._keys = data.keys || { KeyS: false, KeyW: false, KeyA: false, KeyD: false } 
+
+        console.log(this._keys)
+        this._keyboardAndMouseManager = new KeyboardAndMouse({ keyboardWork: true, keys: this._keys})
+        
         console.log(this._keyboardAndMouseManager)
         this.generateMatrixOfView()
 
@@ -47,11 +52,26 @@ export default class Camera implements FigureInterface {
         this._matrix = this._matrix4D.xRotate(this._matrix, this._matrix4D.degToRad(this._rotationInDeg.x))
         this._matrix = this._matrix4D.yRotate(this._matrix, this._matrix4D.degToRad(this._rotationInDeg.y))
         this._matrix = this._matrix4D.zRotate(this._matrix, this._matrix4D.degToRad(this._rotationInDeg.z))
-
         this._viewMatrix = this._matrix4D.multiplyMatrices(proj, this._matrix)
     }
     calculate(deltaTime: number) {
         if (this._keyboardAndMouseManager) {
+
+            if(this._keyboardAndMouseManager._keys.KeyW){
+                this.addToPosition({ x: 0, y: 0, z: this._acceleration * deltaTime })
+            }
+            if (this._keyboardAndMouseManager._keys.KeyS) {
+                this.addToPosition({ x: 0, y: 0, z: -this._acceleration * deltaTime })
+
+            }
+            if (this._keyboardAndMouseManager._keys.KeyA) {
+                this.addToRotation({ x: 0, z: (-this._acceleration * 600)  * deltaTime, y: 0 })
+
+            }
+            if (this._keyboardAndMouseManager._keys.KeyD) {
+                this.addToRotation({ x: 0, z: (this._acceleration* 600) * deltaTime, y: 0 })
+
+            }
 
         }
     }

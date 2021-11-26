@@ -1,4 +1,4 @@
-export default class KeyboardAndMouse {
+export  class KeyboardAndMouse {
     _keyboardWork: boolean
     _mouseWork: boolean
     _keys: Keys
@@ -35,7 +35,7 @@ export default class KeyboardAndMouse {
         }
     }
 }
-interface Keys {
+export interface Keys {
     KeyA?: boolean;
     KeyB?: boolean;
     KeyC?: boolean;

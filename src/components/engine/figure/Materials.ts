@@ -18,7 +18,7 @@ export default class Materials {
             }else{
                 const hexToByte = this.hexToBytes(args.color.replace("#",""))
                 this._faceColors = new Array(6).fill(hexToByte)
-                console.log(hexToByte)
+                // console.log(hexToByte)
                 // console.log(this._faceColors)
             }
 

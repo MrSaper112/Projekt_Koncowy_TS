@@ -62,7 +62,7 @@ export class MainEngine {
             const sliderMan = new sliderManager()
             this._fps = new FPSIndicator()
             this._camera = new Camera(gl,{})
-
+    
             this._program = this._webGLutils.newProgram(gl);
             let f = () => {
                 return Math.floor(Math.random() * (50 + 10 + 1) - 10)
@@ -114,7 +114,6 @@ export class MainEngine {
 
         // Clear the canvas before we start drawing on it.
         this._camera.calculate(deltaTime)
-
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         this.square.forEach((square) => {
             square.draw(this._program,this._camera);
