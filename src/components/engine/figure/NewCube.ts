@@ -1,6 +1,7 @@
 import FigureInterface, { vector3D } from "../addons/FiguresInterFace";
 import Matrix4D from "../addons/Matrix4D";
 import { programArray } from "../addons/webGLutils";
+import Camera from "./Camera";
 import Materials from "./Materials";
 let x = 0
 let y = 0
@@ -8,6 +9,7 @@ let z = 0
 export default class Cube implements FigureInterface {
     public readonly _positions: Array<number>
     public _indices: Array<number>
+    public _normals: Array<number>
     public _textureCoordinates: Array<number>
     public _faceColors: Array<Array<number>>
     public _matrix4D: Matrix4D;
@@ -21,7 +23,7 @@ export default class Cube implements FigureInterface {
         this._matrix4D = new Matrix4D();
         this._gl = gl
         this._vector = vect
-        this._material = new Materials(this._gl, { color: 'ff00ff'  })
+        this._material = new Materials(this._gl, { color: 'ff00ff' })
         this._scale = { x: 1, y: 1, z: 1 }
         this._rotationInDeg = { x: 0, y: 0, z: 0 }
         this._positions = [
@@ -61,11 +63,6 @@ export default class Cube implements FigureInterface {
             -1.0, 1.0, 1.0,
             -1.0, 1.0, -1.0,
         ];
-        let fun = () => {
-            return Math.random()
-        }
-        // let colors = new Array(6).fill(new Array(4).( Math.random()))
-        //  console.log(colors)
 
         this._indices = [
             0, 1, 2, 0, 2, 3,    // front
@@ -107,6 +104,43 @@ export default class Cube implements FigureInterface {
             1.0, 1.0,
             0.0, 1.0,
         ];
+        this._normals = [
+            // Front
+            0.0, 0.0, 1.0,
+            0.0, 0.0, 1.0,
+            0.0, 0.0, 1.0,
+            0.0, 0.0, 1.0,
+
+            // Back
+            0.0, 0.0, -1.0,
+            0.0, 0.0, -1.0,
+            0.0, 0.0, -1.0,
+            0.0, 0.0, -1.0,
+
+            // Top
+            0.0, 1.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 1.0, 0.0,
+
+            // Bottom
+            0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0,
+
+            // Right
+            1.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+
+            // Left
+            -1.0, 0.0, 0.0,
+            -1.0, 0.0, 0.0,
+            -1.0, 0.0, 0.0,
+            -1.0, 0.0, 0.0
+        ];
     }
     updateX(e: number) {
         x = e
@@ -117,34 +151,24 @@ export default class Cube implements FigureInterface {
     updateY(e: number) {
         y = e
     }
-    
-    draw(_prg: programArray) {
+
+    draw(_prg: programArray, _camera: Camera) {
         // console.log(_prg);
         let prg: WebGLProgram
-
-        if (this._material._type === "color"){
+        if (this._material._type === "color") {
             prg = _prg.shaders.color._prg
-        }else if(this._material._type === "texture"){
+        } else if (this._material._type === "texture") {
             prg = _prg.shaders.texture._prg
-        }
-
+        } 
+        // else if (this._material._type === "textureLight") {
+        //     prg = _prg.shaders.textureNormal._prg
+        // }
         this._gl.useProgram(prg)
         this._gl.linkProgram(prg)
 
         const vertexPosition = _prg.returnAttrib(this._gl, prg, 'aVertexPosition')
         const projectionMatrixA = _prg.returnUniform(this._gl, prg, 'uProjectionMatrix')
         const modelViewMatrixA = _prg.returnUniform(this._gl, prg, 'uModelViewMatrix')
-
-        const fieldOfView = 60 * Math.PI / 180;   // in radians
-        const aspect = this._gl.canvas.clientWidth / this._gl.canvas.clientHeight;
-        const zNear = 0.1;
-        const zFar = 10000.0;
-        let proj = this._matrix4D.perspective(fieldOfView, aspect, zNear, zFar)
-        let translateMatrice = this._matrix4D.generateMatrix()
-        translateMatrice = this._matrix4D.translate(translateMatrice, x, y, z)
-
-        let projectionMatrix = this._matrix4D.multiplyMatrices(proj, translateMatrice)
-
 
         let modelViewMatrix = this._matrix4D.generateMatrix()
         modelViewMatrix = this._matrix4D.translate(modelViewMatrix, this._vector.x, this._vector.y, this._vector.z)
@@ -183,7 +207,7 @@ export default class Cube implements FigureInterface {
         this._gl.uniformMatrix4fv(
             projectionMatrixA,
             false,
-            projectionMatrix);
+            _camera._viewMatrix);
         this._gl.uniformMatrix4fv(
             modelViewMatrixA,
             false,
@@ -191,7 +215,7 @@ export default class Cube implements FigureInterface {
 
 
 
-        if(this._material._type === "color"){
+        if (this._material._type === "color") {
             const vertexColor = _prg.returnAttrib(this._gl, prg, 'aVertexColor')
             {
                 var colors: Array<number> = [];
@@ -221,7 +245,7 @@ export default class Cube implements FigureInterface {
                     vertexColor);
             }
 
-        }else if (this._material._type === "texture"){
+        } else if (this._material._type === "texture" || this._material._type === "textureLight") {
             const textureCoord = _prg.returnAttrib(this._gl, prg, "aTextureCoord")
             const sampler = _prg.returnUniform(this._gl, prg, "uSampler")
             {
@@ -234,7 +258,6 @@ export default class Cube implements FigureInterface {
                 const normalize = false; // don't normalize
                 const stride = 0; // how many bytes to get from one set to the next
                 const offset = 0; // how many bytes inside the buffer to start from
-                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, textureCoordBuffer);
                 this._gl.vertexAttribPointer(textureCoord, num, type, normalize, stride, offset);
                 this._gl.enableVertexAttribArray(textureCoord);
 
@@ -248,8 +271,43 @@ export default class Cube implements FigureInterface {
                 this._gl.uniform1i(sampler, 0);
             }
 
-        }
+        } 
+         if (this._material._type === "textureLight") {
+            {
+                const normalBuffer = this._gl.createBuffer();
+                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, normalBuffer);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(this._normals),
+                    this._gl.STATIC_DRAW);
 
+                 const vertexNormal = _prg.returnAttrib(this._gl, prg, "aVertexNormal")
+                 const uvertexNormal = _prg.returnUniform(this._gl, prg, "uNormalMatrix")
+                // console.log(vertexNormal,uvertexNormal)
+                const numComponents = 3;
+                const type = this._gl.FLOAT;
+                const normalize = false;
+                const stride = 0;
+                const offset = 0;
+                this._gl.vertexAttribPointer(
+                    vertexNormal, numComponents,
+                    type,
+                    normalize,
+                    stride,
+                    offset);
+                this._gl.enableVertexAttribArray(
+                    vertexNormal)
+
+
+                let normalMatrix = this._matrix4D.generateMatrix()
+                normalMatrix = this._matrix4D.inverse(modelViewMatrix);
+                normalMatrix = this._matrix4D.transpose(normalMatrix);
+
+
+                this._gl.uniformMatrix4fv(
+                    uvertexNormal,
+                    false,
+                    normalMatrix);
+            }
+        }
         {
             const vertexCount = 36;
             const type = this._gl.UNSIGNED_SHORT;
@@ -257,33 +315,32 @@ export default class Cube implements FigureInterface {
             this._gl.drawElements(this._gl.TRIANGLES, vertexCount, type, offset);
         }
     }
-    rotateMe(vect: vector3D) {
-        this._rotationInDeg.x = vect.x
-        this._rotationInDeg.y = vect.y
-        this._rotationInDeg.z = vect.z
 
-    }
-    updateRotation(vect: vector3D): void {
-        this._rotationInDeg.x += vect.x
-        this._rotationInDeg.y += vect.y
-        this._rotationInDeg.z += vect.z
-    }
-    translateMe(vect: vector3D) {
-        this._vector.x = vect.x
-        this._vector.y = vect.y
-        this._vector.z = vect.z
-    }
-    updateMyPos(vect: vector3D) {
-        this._vector.x += vect.x
-        this._vector.y += vect.y
-        this._vector.z += vect.z
-        // this._matrix = this.translate(vect.x, vect.y, vect.z);
-    }
     scaleMe(vect: vector3D) {
         // this._matrix = this.scale(this._matrix, vect.x, vect.y, vect.z);
         this._scale.x = vect.x
         this._scale.y = vect.y
         this._scale.z = vect.z
+    }
+    addToPosition(vect: vector3D): void {
+        this._vector.x += vect.x
+        this._vector.y += vect.y
+        this._vector.z += vect.z
+    }
+    addToRotation(vect: vector3D): void {
+        this._rotationInDeg.x += vect.x
+        this._rotationInDeg.y += vect.y
+        this._rotationInDeg.z += vect.z
+    }
+    setNewCoordinate(vect: vector3D): void {
+        this._vector.x = vect.x
+        this._vector.y = vect.y
+        this._vector.z = vect.z
+    }
+    setNewRotations(vect: vector3D): void {
+        this._rotationInDeg.x = vect.x
+        this._rotationInDeg.y = vect.y
+        this._rotationInDeg.z = vect.z
     }
 }
 

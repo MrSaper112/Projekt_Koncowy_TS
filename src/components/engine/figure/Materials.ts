@@ -1,4 +1,5 @@
 export default class Materials {
+    _useNormals:boolean
     _type: string
     _faceColors: Array<Array<number>>
     _alpha: number
@@ -7,6 +8,7 @@ export default class Materials {
     _texture: WebGLTexture
     constructor(gl:WebGLRenderingContext,args?: args) {
         this._gl = gl
+        this._useNormals = true
         if ("color" in args) {
             this._type = "color"
             "alpha" in args ? this._alpha = args.alpha : this._alpha = 1
@@ -23,6 +25,9 @@ export default class Materials {
         } else if ("texture" in args) {
             this._type = "texture"
             this._urlOfTexture = args.texture
+            if("normal" in args && args.normal) {
+                this._type = "textureLight"
+            }
             this._texture = this.loadTexture()
 
         } else {
@@ -101,4 +106,5 @@ interface args {
     faces?: Array<Array<number>>
     alpha?: number
     texture?: string
+    normal?: boolean
 }

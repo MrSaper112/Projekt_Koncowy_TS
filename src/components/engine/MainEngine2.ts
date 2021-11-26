@@ -1,6 +1,6 @@
 import { fps } from "../StaticItems";
 import webGLutils, { programArray } from "./addons/webGLutils";
-import MeshPlane from "./figure/MeshPlane";
+import MeshPlane from "./figure/Plane";
 import Camera from "./figure/Camera";
 import sliderManager from "./addons/sliderApi";
 import Cube from "./figure/NewCube";
@@ -9,7 +9,9 @@ import Materials from "./figure/Materials";
 // const fragmentaShader = require('./assets/fragmentaShader.txt');
 import dirtJgp from '../textures/dirt.jpg'
 import FPSIndicator from "./addons/FpsIndicator";
-
+import Plane from "./figure/Plane";
+let speed = 1000
+let then = 0
 export class MainEngine {
     public _cnv: HTMLCanvasElement
     private _program: programArray
@@ -17,6 +19,7 @@ export class MainEngine {
     private _camera: Camera
     public square: Array<Cube>
     private _fps: FPSIndicator
+    _plane:Plane
     time: number
     constructor(plane: HTMLCanvasElement) {
         this._cnv = plane
@@ -25,7 +28,7 @@ export class MainEngine {
         this.square = []
         this.time = 0
         this.createCanvas()
-        requestAnimationFrame(()=>this.render())
+        requestAnimationFrame(()=>this.render(0))
     }
 
     async createCanvas() {
@@ -58,9 +61,9 @@ export class MainEngine {
             this._webGLutils = new webGLutils()
             const sliderMan = new sliderManager()
             this._fps = new FPSIndicator()
-            
+            this._camera = new Camera(gl,{})
+
             this._program = this._webGLutils.newProgram(gl);
-            console.log(this._program)
             let f = () => {
                 return Math.floor(Math.random() * (50 + 10 + 1) - 10)
             }
@@ -69,18 +72,20 @@ export class MainEngine {
             }
             let newCube = new Cube(gl, { x: 5, y: -2, z: -3 });
             newCube._scale = { x: 3, y: 3, z: 3 };
-            sliderMan.createSlider(-100, 100, 0.1, 0, "Camera x", (e: number) => { newCube.updateX(e) });
-            sliderMan.createSlider(-100, 100, 0.1, 0, "Camera z", (e: number) => { newCube.updateZ(e) });
-            sliderMan.createSlider(-100, 100, 0.1, 0, "Camera y", (e: number) => { newCube.updateY(e) });
+            sliderMan.createSlider(-100, 100, 0.1, 0, "Camera x", (e: number) => { this._camera.updateX(e) });
+            sliderMan.createSlider(-100, 100, 0.1, 0, "Camera z", (e: number) => { this._camera.updateZ(e) });
+            sliderMan.createSlider(-100, 100, 0.1, 0, "Camera y", (e: number) => { this._camera.updateY(e) });
 
-            for (let x = 0; x < 10; x++) {
+            for (let x = 0; x < 100; x++) {
                 let newCube = new Cube(gl, { x: f(), y: f(), z: f() });
                 if (Math.random() < 0.5) newCube._material = new Materials(gl, { color: '#ff00AA' })
-                else newCube._material = new Materials(gl, { texture: dirtJgp, })
+                else newCube._material = new Materials(gl, { texture: dirtJgp, normal: false })
 
                 this.square.push(newCube);
 
             }
+            this._plane = new Plane({x:0, y: 0, z: 0},{width:10,depth:10,widthSegments:2,depthSegments:2},gl)
+
             // let newCube2 = new Cube(gl, { x: 10, y: -2, z: -3 });
             // newCube2._scale = { x: 1, y: 1, z: 1 };
             // // newCube._rotationInDeg = {x:45, y:0, z: 45 }
@@ -94,21 +99,30 @@ export class MainEngine {
 
     }
 
-    render(): number {
+    render(now:number) {
+        // Convert to seconds
+        now *= 0.001;
+        // Subtract the previous time from the current time
+        // console.log(now, then)
+        var deltaTime = now - then
+        // Remember the current time for the next frame.
+        then = now;
 
         const gl = this._cnv.getContext("webgl");
-        gl.clearColor(0.0, 0.0, 0.0, 0.3);  // Clear to black, fully opaque
+        gl.clearColor(0.0, 0.0, 0.0, 0);  // Clear to black, fully opaque
         gl.enable(gl.DEPTH_TEST);           // Enable depth testing
 
         // Clear the canvas before we start drawing on it.
+        this._camera.calculate(deltaTime)
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         this.square.forEach((square) => {
-            square.draw(this._program);
-            square.updateRotation({ x: 0, y: 0, z: 360 });
+            square.draw(this._program,this._camera);
+            square.addToRotation({ x: 0, y: 0, z: speed * deltaTime });
         })
         let num = Date.now()
         this._fps.render(num)
+        this._plane.draw(this._program)
         // this.square[0].draw(this._program);
         // this.square[1].draw(this._program);
         // // if (this.time === 2) {
@@ -122,7 +136,7 @@ export class MainEngine {
         // console.log("Czas leci!")
 
 
-        return requestAnimationFrame(() => this.render())
+        requestAnimationFrame(() => this.render(new Date().getTime()))
     }
 
 }

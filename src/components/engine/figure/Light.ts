@@ -1,6 +1,7 @@
 import FigureInterface, { vector3D } from "../addons/FiguresInterFace";
 import Matrix4D from "../addons/Matrix4D";
 import { programArray } from "../addons/webGLutils";
+import Materials from "./Materials";
 
 export class BulbLight implements FigureInterface {
     public _matrix4D?: Matrix4D;
@@ -16,6 +17,19 @@ export class BulbLight implements FigureInterface {
         this._vector = vect
         this._scale = { x: 1, y: 1, z: 1 }
         this._rotationInDeg = { x: 0, y: 0, z: 0 }
+    }
+    _material?: Materials;
+    addToPosition(vect: vector3D): void {
+        throw new Error("Method not implemented.");
+    }
+    addToRotation(vect: vector3D): void {
+        throw new Error("Method not implemented.");
+    }
+    setNewCoordinate(vect: vector3D): void {
+        throw new Error("Method not implemented.");
+    }
+    setNewRotations(vect: vector3D): void {
+        throw new Error("Method not implemented.");
     }
 
 

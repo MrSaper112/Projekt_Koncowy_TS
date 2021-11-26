@@ -1,9 +1,5 @@
-import * as vertexShaderSimpleColor from '../assets/vertexShaderSimpleColor.txt'
-import * as fragmetalShaderSimpleColor from '../assets/fragmetalShaderSimpleColor.txt'
-
-import * as vertexShaderTexture from '../assets/vertexShaderTexture.txt'
-import * as fragmentalShaderTexture from '../assets/fragmentalShaderTexture.txt'
 // let x: { a: boolean, b: boolean, c: boolean, d: boolean } = {a: false, b: false, c: false, d: false}
+import { fShaderColor, fShaderTexture, fShaderTextureNormal, vShaderColor, vShaderTexture, vShaderTextureNormal } from '../assets/ShaderTexted'
 
 export default class webGLutils {
     initShaderProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
@@ -29,7 +25,7 @@ export default class webGLutils {
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+            console.log('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
             gl.deleteShader(shader);
             return null;
         }
@@ -39,8 +35,9 @@ export default class webGLutils {
 
     newProgram(gl: WebGLRenderingContext): programArray {
         let finalArrayOfShaders: shadersArray = {
-            color: new Shader(this, gl, vertexShaderSimpleColor.default.toString(), fragmetalShaderSimpleColor.default.toString()),
-            texture: new Shader(this, gl, vertexShaderTexture.default.toString(), fragmentalShaderTexture.default.toString())
+            color: new Shader(this, gl, vShaderColor, fShaderColor),
+            texture: new Shader(this, gl, vShaderTexture, fShaderTexture),
+            textureNormal: new Shader(this, gl, vShaderTextureNormal, fShaderTextureNormal)
         }
         return {
             returnAttrib: (_gl: WebGLRenderingContext, _prg: WebGLProgram, _type: string) => { return _gl.getAttribLocation(_prg, _type) },
@@ -68,6 +65,7 @@ export interface programArray {
 interface shadersArray {
     color: Shader
     texture: Shader
+    textureNormal: Shader
 }
 
 interface shaderArray {
