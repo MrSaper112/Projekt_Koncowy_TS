@@ -4,11 +4,9 @@ import Matrix4D from "../addons/Matrix4D";
 import { programArray } from "../addons/webGLutils";
 import Materials from "./Materials";
 import dirtJgp from '../../textures/dirt.jpg'
+import cobble from '../../textures/cobble.png'
+import Camera from "./Camera";
 
-
-let x = 0
-let y = 0
-let z = 0
 export default class Plane implements FigureInterface {
     _dat: { width: number, depth: number, widthSegments: number, depthSegments: number }
     _matrix4D?: Matrix4D;
@@ -28,7 +26,7 @@ export default class Plane implements FigureInterface {
         this._vector = vect
         this._rotationInDeg = { x: 0, y: 0, z: 0 }
         this._matrix4D = new Matrix4D();
-        this._material = new Materials(this._gl, { texture: dirtJgp, normal: false })
+        this._material = new Materials(this._gl, { texture: cobble, normal: false })
         this._matrix = this._matrix4D.generateMatrix()
         this._datatToRender = this.createPlaneVertices()
         console.log(this._datatToRender)
@@ -48,16 +46,8 @@ export default class Plane implements FigureInterface {
     setNewRotations(vect: vector3D): void {
         throw new Error("Method not implemented.");
     }
-    updateX(e: number) {
-        x = e
-    }
-    updateZ(e: number) {
-        z = e
-    }
-    updateY(e: number) {
-        y = e
-    }
-    draw(_prg: programArray) {
+
+    draw(_prg: programArray, _camera: Camera) {
         // console.log(_prg);
         let prg: WebGLProgram
         if (this._material._type === "color") {
@@ -75,15 +65,8 @@ export default class Plane implements FigureInterface {
         const projectionMatrixA = _prg.returnUniform(this._gl, prg, 'uProjectionMatrix')
         const modelViewMatrixA = _prg.returnUniform(this._gl, prg, 'uModelViewMatrix')
 
-        const fieldOfView = 60 * Math.PI / 180;   // in radians
-        const aspect = this._gl.canvas.clientWidth / this._gl.canvas.clientHeight;
-        const zNear = 0.1;
-        const zFar = 10000.0;
-        let proj = this._matrix4D.perspective(fieldOfView, aspect, zNear, zFar)
-        let translateMatrice = this._matrix4D.generateMatrix()
-        translateMatrice = this._matrix4D.translate(translateMatrice, x, y, z)
 
-        let projectionMatrix = this._matrix4D.multiplyMatrices(proj, translateMatrice)
+        let projectionMatrix = _camera._viewMatrix
 
 
         let modelViewMatrix = this._matrix4D.generateMatrix()
@@ -189,8 +172,8 @@ export default class Plane implements FigureInterface {
 
         }
        
-        {8
-            const vertexCount = 16;
+        {
+            const vertexCount = 500;
             const type = this._gl.UNSIGNED_SHORT;
             const offset = 0;
             this._gl.drawElements(this._gl.TRIANGLES, vertexCount, type, offset);

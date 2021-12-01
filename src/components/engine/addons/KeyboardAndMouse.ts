@@ -1,11 +1,13 @@
-export  class KeyboardAndMouse {
+export class KeyboardAndMouse {
     _keyboardWork: boolean
     _mouseWork: boolean
     _keys: Keys
+    _positionOfMouse: { x: number, y: number }
     constructor(data: { keyboardWork?: boolean; mouseWork?: boolean, keys?: any }) {
         this._keyboardWork = data.keyboardWork || false
         this._mouseWork = data.mouseWork || false
         this._keys = data.keys || null
+        this._positionOfMouse = { x: document.body.clientWidth / 2, y: document.body.clientHeight / 2 }
         console.log(this._keys)
         this.init()
     }
@@ -32,6 +34,46 @@ export  class KeyboardAndMouse {
                     });
 
             })
+        }
+        if (this._mouseWork) {
+        //    document.body.requestPointerLock = document.body.requestPointerLock
+        //     document.exitPointerLock = document.exitPointerLock
+
+        //     document.body.onclick = () => {
+        //         document.body.requestPointerLock();
+        //     }
+
+        //     // pointer lock event listeners
+        //     // Hook pointer lock state change events for different browsers
+
+        //     let lockChangeAlert = () => {
+        //         if (document.pointerLockElement === document.body) {
+        //             console.log('The pointer lock status is now locked');
+        //             document.addEventListener("mousemove", canvasLoop, false);
+        //         } else {
+        //             console.log('The pointer lock status is now unlocked');
+        //             document.removeEventListener("mousemove", canvasLoop, false);
+        //         }
+        //     }
+
+        //     document.addEventListener('pointerlockchange', lockChangeAlert, false);
+        //     document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+
+        //     let canvasLoop = (e: MouseEvent) => {
+        //         var movementX = e.movementX
+        //         var movementY = e.movementY
+        //         this._positionOfMouse.x += movementX / Math.PI
+        //         this._positionOfMouse.y += movementY / Math.PI
+
+        //         console.log("X position: " + this._positionOfMouse.x + ', Y position: ' + this._positionOfMouse.y);
+        //     }
+
+            document.addEventListener("mousemove", (e) => {
+                this._positionOfMouse.x = (e.offsetX - (document.body.clientWidth / 2)) / Math.PI
+                this._positionOfMouse.y = (e.offsetY - (document.body.clientHeight / 2)) / Math.PI
+                // console.log(this._positionOfMouse)
+            })
+
         }
     }
 }

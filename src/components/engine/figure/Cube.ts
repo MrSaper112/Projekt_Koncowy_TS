@@ -177,6 +177,8 @@ export default class Cube implements FigureInterface {
         modelViewMatrix = this._matrix4D.yRotate(modelViewMatrix, this._matrix4D.degToRad(this._rotationInDeg.y))
         modelViewMatrix = this._matrix4D.zRotate(modelViewMatrix, this._matrix4D.degToRad(this._rotationInDeg.z))
 
+
+        let mvMatrix = this._matrix4D.multiplyMatrices(_camera._matrix,modelViewMatrix)
         {
             const positionBuffer = this._gl.createBuffer()
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, positionBuffer);
@@ -211,7 +213,7 @@ export default class Cube implements FigureInterface {
         this._gl.uniformMatrix4fv(
             modelViewMatrixA,
             false,
-            modelViewMatrix);
+            mvMatrix);
 
 
 
