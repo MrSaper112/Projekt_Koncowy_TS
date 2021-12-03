@@ -1,6 +1,6 @@
 // import { Program } from "../../../../node_modules/typescript/lib/typescript"
 
-import FigureInterface, { vector3D } from "../addons/FiguresInterFace"
+import FigureInterface, { generateUUID, vector3D } from "../addons/FiguresInterFace"
 import { KeyboardAndMouse, Keys } from "../addons/KeyboardAndMouse";
 import Matrix4D from "../addons/Matrix4D";
 import { programArray } from "../addons/webGLutils";
@@ -22,8 +22,14 @@ export default class Camera implements FigureInterface {
     _acceleration?: number
     _aroundSpeed?: number
     _keys: Keys
+    _UUID: string;
+    _positions?: number[];
+    _indices?: number[];
+    _scale?: vector3D;
+    _material?: Materials;
     constructor(gl: WebGLRenderingContext, data: { fov?: number, aspect?: number, zNear?: number, zFar?: number, acceleration?: number, keys?: Keys, aroundSpeed?: number }, vect?: vector3D) {
         this._matrix4D = new Matrix4D()
+        this._UUID = generateUUID();
 
         this._gl = gl;
         this._fov = this._matrix4D.degToRad(data.fov || 60)
@@ -31,7 +37,7 @@ export default class Camera implements FigureInterface {
         this._zNear = data.zNear || 0.1;
         this._zFar = data.zFar || 100000.0;
         this._rotationInDeg = { x: 0, y: 0, z: 0 }
-        this._vector = { x: 0, y: 0, z: 0 }
+        this._vector = vect || { x: 0, y: 0, z: 0 } 
         this._acceleration = data.acceleration || 20
         this._aroundSpeed = data.aroundSpeed || 130
 
@@ -42,6 +48,7 @@ export default class Camera implements FigureInterface {
         this.generateMatrixOfView()
 
     }
+
     scaleMe(vect: vector3D): void {
         throw new Error("Method not implemented.");
     }

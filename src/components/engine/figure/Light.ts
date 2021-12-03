@@ -18,6 +18,7 @@ export class BulbLight implements FigureInterface {
         this._scale = { x: 1, y: 1, z: 1 }
         this._rotationInDeg = { x: 0, y: 0, z: 0 }
     }
+    _UUID: string;
     _material?: Materials;
     addToPosition(vect: vector3D): void {
         throw new Error("Method not implemented.");

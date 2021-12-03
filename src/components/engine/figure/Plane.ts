@@ -1,13 +1,12 @@
-import { depth } from "../addons/config";
-import FigureInterface, { vector3D } from "../addons/FiguresInterFace";
+import FigureInterface, { generateUUID, vector3D } from "../addons/FiguresInterFace";
 import Matrix4D from "../addons/Matrix4D";
 import { programArray } from "../addons/webGLutils";
 import Materials from "./Materials";
-import dirtJgp from '../../textures/dirt.jpg'
 import cobble from '../../textures/cobble.png'
 import Camera from "./Camera";
 
 export default class Plane implements FigureInterface {
+    _UUID: string;
     _dat: { width: number, depth: number, widthSegments: number, depthSegments: number }
     _matrix4D?: Matrix4D;
     _positions?: number[];
@@ -20,6 +19,7 @@ export default class Plane implements FigureInterface {
     _matrix?: Array<number>
     _datatToRender: InterHelp
     constructor(vect: vector3D, dat: { width: number, depth: number, widthSegments: number, depthSegments: number }, gl: WebGLRenderingContext) {
+        this._UUID = generateUUID();
         this._dat = dat
         this._gl = gl
         this._scale = { x: 1, y: 1, z: 1 }
@@ -66,15 +66,14 @@ export default class Plane implements FigureInterface {
         const modelViewMatrixA = _prg.returnUniform(this._gl, prg, 'uModelViewMatrix')
 
 
-        let projectionMatrix = _camera._viewMatrix
+        let modelMatrix = this._matrix4D.generateMatrix()
+        modelMatrix = this._matrix4D.translate(modelMatrix, this._vector.x, this._vector.y, this._vector.z)
+        modelMatrix = this._matrix4D.scale(modelMatrix, this._scale.x, this._scale.y, this._scale.z)
+        modelMatrix = this._matrix4D.xRotate(modelMatrix, this._rotationInDeg.x)
+        modelMatrix = this._matrix4D.yRotate(modelMatrix, this._rotationInDeg.y)
+        modelMatrix = this._matrix4D.zRotate(modelMatrix, this._rotationInDeg.z)
 
-
-        let modelViewMatrix = this._matrix4D.generateMatrix()
-        modelViewMatrix = this._matrix4D.translate(modelViewMatrix, this._vector.x, this._vector.y, this._vector.z)
-        modelViewMatrix = this._matrix4D.scale(modelViewMatrix, this._scale.x, this._scale.y, this._scale.z)
-        modelViewMatrix = this._matrix4D.xRotate(modelViewMatrix, this._matrix4D.degToRad(this._rotationInDeg.x))
-        modelViewMatrix = this._matrix4D.yRotate(modelViewMatrix, this._matrix4D.degToRad(this._rotationInDeg.y))
-        modelViewMatrix = this._matrix4D.zRotate(modelViewMatrix, this._matrix4D.degToRad(this._rotationInDeg.z))
+        let mvMatrix = this._matrix4D.multiplyMatrices(_camera._viewProjection, modelMatrix)
 
         {
             const positionBuffer = this._gl.createBuffer()
@@ -104,13 +103,9 @@ export default class Plane implements FigureInterface {
         // Tell WebGL to use our program when drawing
 
         this._gl.uniformMatrix4fv(
-            projectionMatrixA,
-            false,
-            projectionMatrix);
-        this._gl.uniformMatrix4fv(
             modelViewMatrixA,
             false,
-            modelViewMatrix);
+            mvMatrix);
 
 
 
@@ -165,15 +160,14 @@ export default class Plane implements FigureInterface {
 
                 // Bind the texture to texture unit 0
                 this._gl.bindTexture(this._gl.TEXTURE_2D, this._material._texture);
-
-                // Tell the shader we bound the texture to texture unit 0
+                      // Tell the shader we bound the texture to texture unit 0
                 this._gl.uniform1i(sampler, 0);
             }
 
         }
-       
+
         {
-            const vertexCount = 500;
+            const vertexCount = this._datatToRender.indices.length
             const type = this._gl.UNSIGNED_SHORT;
             const offset = 0;
             this._gl.drawElements(this._gl.TRIANGLES, vertexCount, type, offset);

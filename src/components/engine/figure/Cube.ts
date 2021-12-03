@@ -1,4 +1,4 @@
-import FigureInterface, { vector3D } from "../addons/FiguresInterFace";
+import FigureInterface, { generateUUID, vector3D } from "../addons/FiguresInterFace";
 import Matrix4D from "../addons/Matrix4D";
 import { programArray } from "../addons/webGLutils";
 import Camera from "./Camera";
@@ -7,6 +7,7 @@ let x = 0
 let y = 0
 let z = 0
 export default class Cube implements FigureInterface {
+    _UUID: string;
     public readonly _positions: Array<number>
     public _indices: Array<number>
     public _normals: Array<number>
@@ -20,6 +21,8 @@ export default class Cube implements FigureInterface {
     public _material: Materials
     private _buffersOfCubes: { position: WebGLBuffer, color: WebGLBuffer, indices: WebGLBuffer }
     constructor(gl: WebGLRenderingContext, vect: vector3D = { x: 1, y: 1, z: 1 }) {
+        this._UUID = generateUUID();
+
         this._matrix4D = new Matrix4D();
         this._gl = gl
         this._vector = vect
@@ -159,7 +162,7 @@ export default class Cube implements FigureInterface {
             prg = _prg.shaders.color._prg
         } else if (this._material._type === "texture") {
             prg = _prg.shaders.texture._prg
-        } 
+        }
         // else if (this._material._type === "textureLight") {
         //     prg = _prg.shaders.textureNormal._prg
         // }
@@ -172,7 +175,9 @@ export default class Cube implements FigureInterface {
         let modelMatrix = this._matrix4D.generateMatrix()
         modelMatrix = this._matrix4D.translate(modelMatrix, this._vector.x, this._vector.y, this._vector.z)
         modelMatrix = this._matrix4D.scale(modelMatrix, this._scale.x, this._scale.y, this._scale.z)
-
+        modelMatrix = this._matrix4D.xRotate(modelMatrix, this._rotationInDeg.x)
+        modelMatrix = this._matrix4D.yRotate(modelMatrix, this._rotationInDeg.y)
+        modelMatrix = this._matrix4D.zRotate(modelMatrix, this._rotationInDeg.z)
 
         let mvMatrix = this._matrix4D.multiplyMatrices(_camera._viewProjection, modelMatrix)
         {
@@ -257,7 +262,7 @@ export default class Cube implements FigureInterface {
 
                 // Tell WebGL we want to affect texture unit 0
                 this._gl.activeTexture(this._gl.TEXTURE0);
-
+                
                 // Bind the texture to texture unit 0
                 this._gl.bindTexture(this._gl.TEXTURE_2D, this._material._texture);
 

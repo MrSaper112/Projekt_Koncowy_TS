@@ -1,11 +1,14 @@
 export default class Materials {
     _useNormals:boolean
+    _textureReapet:boolean
     _type: string
     _faceColors: Array<Array<number>>
     _alpha: number
     _gl: WebGLRenderingContext
     _urlOfTexture: string
     _texture: WebGLTexture
+    _repeatTexture: boolean
+
     constructor(gl:WebGLRenderingContext,args?: args) {
         this._gl = gl
         this._useNormals = true
@@ -27,6 +30,10 @@ export default class Materials {
             this._urlOfTexture = args.texture
             if("normal" in args && args.normal) {
                 this._type = "textureLight"
+            }
+            if ("repeatTexture" in args && args.repeatTexture) {
+                this._repeatTexture = true
+
             }
             this._texture = this.loadTexture()
 
@@ -87,9 +94,23 @@ export default class Materials {
             } else {
                 // No, it's not a power of 2. Turn off mips and set
                 // wrapping to clamp to edge
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
+                if(this._textureReapet){
+                    console.warn("WRAPP")
+                    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
+                    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
+                    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
+
+                }else{
+                    // console.warn("PIPA Repeat")
+                    // this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
+                    // this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
+                    // this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
+
+                    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
+                    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
+                    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
+
+                }
             }
         };
         image.src = this._urlOfTexture;
@@ -107,4 +128,6 @@ interface args {
     alpha?: number
     texture?: string
     normal?: boolean
+    repeatTexture?: boolean
+
 }
