@@ -33,6 +33,7 @@ export class KeyboardAndMouse {
                         }
                     });
 
+
             })
         }
         if (this._mouseWork) {
@@ -69,8 +70,7 @@ export class KeyboardAndMouse {
         //     }
 
             document.addEventListener("mousemove", (e) => {
-                this._positionOfMouse.x = (e.offsetX - (document.body.clientWidth / 2)) / Math.PI
-                this._positionOfMouse.y = (e.offsetY - (document.body.clientHeight / 2)) / Math.PI
+                this._positionOfMouse.x = e.movementX;
                 // console.log(this._positionOfMouse)
             })
 

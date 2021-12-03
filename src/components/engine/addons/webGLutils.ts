@@ -37,7 +37,6 @@ export default class webGLutils {
         let finalArrayOfShaders: shadersArray = {
             color: new Shader(this, gl, vShaderColor, fShaderColor),
             texture: new Shader(this, gl, vShaderTexture, fShaderTexture),
-            textureNormal: new Shader(this, gl, vShaderTextureNormal, fShaderTextureNormal)
         }
         return {
             returnAttrib: (_gl: WebGLRenderingContext, _prg: WebGLProgram, _type: string) => { return _gl.getAttribLocation(_prg, _type) },
@@ -65,7 +64,6 @@ export interface programArray {
 interface shadersArray {
     color: Shader
     texture: Shader
-    textureNormal: Shader
 }
 
 interface shaderArray {

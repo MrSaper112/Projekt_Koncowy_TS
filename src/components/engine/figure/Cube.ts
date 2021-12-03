@@ -167,18 +167,14 @@ export default class Cube implements FigureInterface {
         this._gl.linkProgram(prg)
 
         const vertexPosition = _prg.returnAttrib(this._gl, prg, 'aVertexPosition')
-        const projectionMatrixA = _prg.returnUniform(this._gl, prg, 'uProjectionMatrix')
         const modelViewMatrixA = _prg.returnUniform(this._gl, prg, 'uModelViewMatrix')
 
-        let modelViewMatrix = this._matrix4D.generateMatrix()
-        modelViewMatrix = this._matrix4D.translate(modelViewMatrix, this._vector.x, this._vector.y, this._vector.z)
-        modelViewMatrix = this._matrix4D.scale(modelViewMatrix, this._scale.x, this._scale.y, this._scale.z)
-        modelViewMatrix = this._matrix4D.xRotate(modelViewMatrix, this._matrix4D.degToRad(this._rotationInDeg.x))
-        modelViewMatrix = this._matrix4D.yRotate(modelViewMatrix, this._matrix4D.degToRad(this._rotationInDeg.y))
-        modelViewMatrix = this._matrix4D.zRotate(modelViewMatrix, this._matrix4D.degToRad(this._rotationInDeg.z))
+        let modelMatrix = this._matrix4D.generateMatrix()
+        modelMatrix = this._matrix4D.translate(modelMatrix, this._vector.x, this._vector.y, this._vector.z)
+        modelMatrix = this._matrix4D.scale(modelMatrix, this._scale.x, this._scale.y, this._scale.z)
 
 
-        let mvMatrix = this._matrix4D.multiplyMatrices(_camera._matrix,modelViewMatrix)
+        let mvMatrix = this._matrix4D.multiplyMatrices(_camera._viewProjection, modelMatrix)
         {
             const positionBuffer = this._gl.createBuffer()
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, positionBuffer);
@@ -206,10 +202,6 @@ export default class Cube implements FigureInterface {
 
         // Tell WebGL to use our program when drawing
 
-        this._gl.uniformMatrix4fv(
-            projectionMatrixA,
-            false,
-            _camera._viewMatrix);
         this._gl.uniformMatrix4fv(
             modelViewMatrixA,
             false,
@@ -273,42 +265,6 @@ export default class Cube implements FigureInterface {
                 this._gl.uniform1i(sampler, 0);
             }
 
-        } 
-         if (this._material._type === "textureLight") {
-            {
-                const normalBuffer = this._gl.createBuffer();
-                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, normalBuffer);
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(this._normals),
-                    this._gl.STATIC_DRAW);
-
-                 const vertexNormal = _prg.returnAttrib(this._gl, prg, "aVertexNormal")
-                 const uvertexNormal = _prg.returnUniform(this._gl, prg, "uNormalMatrix")
-                // console.log(vertexNormal,uvertexNormal)
-                const numComponents = 3;
-                const type = this._gl.FLOAT;
-                const normalize = false;
-                const stride = 0;
-                const offset = 0;
-                this._gl.vertexAttribPointer(
-                    vertexNormal, numComponents,
-                    type,
-                    normalize,
-                    stride,
-                    offset);
-                this._gl.enableVertexAttribArray(
-                    vertexNormal)
-
-
-                let normalMatrix = this._matrix4D.generateMatrix()
-                normalMatrix = this._matrix4D.inverse(modelViewMatrix);
-                normalMatrix = this._matrix4D.transpose(normalMatrix);
-
-
-                this._gl.uniformMatrix4fv(
-                    uvertexNormal,
-                    false,
-                    normalMatrix);
-            }
         }
         {
             const vertexCount = 36;

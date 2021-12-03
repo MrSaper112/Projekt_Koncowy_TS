@@ -11,11 +11,11 @@ export default class Matrix4D {
             0, 0, 0, 1]
     }
     radToDeg(r: number) {
-        return r * 180 / Math.PI;
+        return (r * 180) / Math.PI;
     }
 
     degToRad(d: number) {
-        return d * Math.PI / 180;
+        return (d * Math.PI) / 180;
     }
     multiplyMatrices(matrixA: Array<number>, matrixB: Array<number>) {
         // Slice the second matrix up into rows
@@ -66,6 +66,7 @@ export default class Matrix4D {
 
         return [resultX, resultY, resultZ, resultW];
     }
+   
     translate(m: Array<number>, translateX: number = 0, translateY: number = 0, translateZ: number = 0) {
         const matrix = [
             1, 0, 0, 0,
@@ -146,6 +147,7 @@ export default class Matrix4D {
         ];
         return this.multiplyMatrices(m, matrix);
     }
+
     yRotate(m: Array<number>, angleInRadians: number) {
         var c = Math.cos(this.degToRad(angleInRadians));
         var s = Math.sin(this.degToRad(angleInRadians));

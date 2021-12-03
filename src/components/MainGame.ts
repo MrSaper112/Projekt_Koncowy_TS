@@ -31,8 +31,8 @@ export default class MainGame extends MainEngine {
     this._plane = new Plane({ x: 0, y: -100, z: 0}, { width: 1000, depth: 1000, widthSegments: 10, depthSegments: 10 }, this._gl)
     this._plane._material = new Materials(this._gl,{color: "#420F0F0"})
     this._dataToBuild.forEach(block => {
-      let newBlock = new Cube(this._gl, { x: block.x*20, y: 0, z: block.y*20 })
-      newBlock._scale = { x: 5, y: 5, z: 5 }
+      let newBlock = new Cube(this._gl, { x: block.x * 10, y: 10, z: block.y * 10 })
+      newBlock._scale = { x: 1, y: 1, z: 1 }
 
       if (block.textureType === "texture") {
         newBlock._material = new Materials(this._gl, { texture: brick, normal: false })
@@ -41,7 +41,19 @@ export default class MainGame extends MainEngine {
       }
       this._squares.push(newBlock)
     })
+    for (let z = -1; z <= 1; ++z) {
+      for (let y = -1; y <= 1; ++y) {
+        for (let x = -1; x <= 1; ++x) {
+          if (x === 0 && y === 0 && z === 0) {
+            continue;
+          }
 
+          let newBlock = new Cube(this._gl, { x: x * 10, y: y * 10, z: z * 10})
+          newBlock._scale = { x: 1, y: 1, z: 1 }
+          this._squares.push(newBlock)
+        }
+      }
+    }
     requestAnimationFrame(() => this.render(0))
 
     // canvas.style.display = "block"
@@ -54,25 +66,28 @@ export default class MainGame extends MainEngine {
     var deltaTime = now - this._then
     // Remember the current time for the next frame.
     this._then = now;
-    const gl = this._cnv.getContext("webgl");
-    gl.clearColor(0.0, 0.0, 0.0, 0);  // Clear to black, fully opaque
-    gl.enable(gl.DEPTH_TEST);           // Enable depth testing
+    this._gl.viewport(0, 0, this._gl.canvas.width, this._gl.canvas.height);
+
+    this._gl.clearColor(0.0, 0.0, 0.0, 0);  // Clear to black, fully opaque
+    this._gl.enable(this._gl.DEPTH_TEST);           // Enable depth testing
+    this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
+    this._gl.enable(this._gl.CULL_FACE);
+
+    this._camera.generateMatrixOfView()
 
     // // Clear the canvas before we start drawing on it.
-    this._camera.calculate(deltaTime)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     // this.square.forEach((square) => {
     //     square.draw(this._program,this._camera);
     //     square.addToRotation({ x: 0, y: 0, z: speed * deltaTime });
     // })
     let num = Date.now()
     this._fps.render(num)
-    this._plane.draw(this._program, this._camera)
+    // this._plane.draw(this._program, this._camera)
 
     this._squares.forEach(square =>{
       square.draw(this._program, this._camera)
     })
+    this._camera.calculate(deltaTime)
 
     // // this.square[0].draw(this._program);
     // // this.square[1].draw(this._program);

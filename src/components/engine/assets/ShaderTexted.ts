@@ -2,10 +2,9 @@ export const vShaderTexture = `
 attribute vec4 aVertexPosition;
 attribute vec2 aTextureCoord;
 uniform mat4 uModelViewMatrix;
-uniform mat4 uProjectionMatrix;
 varying highp vec2 vTextureCoord;
 void main(void) {
-  gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+  gl_Position =  uModelViewMatrix * aVertexPosition;
   vTextureCoord = aTextureCoord;
 }`
 
@@ -28,10 +27,9 @@ export const vShaderColor = `
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
 uniform mat4 uModelViewMatrix;
-uniform mat4 uProjectionMatrix;
 varying lowp vec4 vColor;
 void main(void) {
-  gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+  gl_Position = uModelViewMatrix * aVertexPosition;
   vColor = aVertexColor;
 }`
 

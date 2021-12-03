@@ -41,7 +41,7 @@ export class MainEngine {
     async draw() {
         if (this._cnv) {
             //Get context from webgl!
-            const gl = this._cnv.getContext("webgl");
+            const gl = this._cnv.getContext("webgl2");
             // Only continue if WebGL is available and working
             console.log(gl)
             if (gl === null) {
