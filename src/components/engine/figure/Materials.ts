@@ -62,11 +62,7 @@ export default class Materials {
         const texture = this._gl.createTexture();
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
-        // Because images have to be downloaded over the internet
-        // they might take a moment until they are ready.
-        // Until then put a sinthis._gle pixel in the texture so we can
-        // use it immediately. When the image has finished downloading
-        // we'll update the texture with the contents of the image.
+
         const level = 0;
         const internalFormat = this._gl.RGBA;
         const width = 1;

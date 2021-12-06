@@ -1,14 +1,10 @@
 import { fps } from "../StaticItems";
 import webGLutils, { programArray } from "./addons/webGLutils";
-import Camera from "./figure/Camera";
-import Cube from "./figure/Cube";
-import Plane from "./figure/Plane";
 
 export class MainEngine {
     public _cnv: HTMLCanvasElement
     public _program: programArray
     public _webGLutils: webGLutils
-    public square: Array<Cube>
     public _gl: WebGLRenderingContext
     time: number
     constructor(plane: HTMLCanvasElement) {
