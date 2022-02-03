@@ -29,14 +29,14 @@ export default class PlaneGenerator {
         for (let y = 0; y < this._sizeRowAndColumn; y++) {
             for (let x = 0; x < this._sizeRowAndColumn; x++) {
                 let lookedup = this._data.filter(d => d.x === x && d.y === y)
-
+                
                 let inside = document.createElement("div")
                 if (lookedup.length > 0) {
                     console.log(lookedup[0])
                     if (lookedup[0].textureType === "texture") {
                         inside.style.backgroundColor = "orange"
                     } else if (lookedup[0].textureType === "color") {
-                        inside.style.backgroundColor = "lime"
+                        inside.style.backgroundColor = lookedup[0].color
                     }
                 }
                 inside.addEventListener("click", () => {
@@ -57,7 +57,7 @@ export default class PlaneGenerator {
         let addons = document.createElement("div")
         addons.className = "addons"
 
-        this._input.addEventListener("keydown", (e) => { this._colorInput = this._input.value });
+        this._input.addEventListener("keyup", (e) => { this._colorInput = this._input.value, console.log(this._colorInput) });
         addons.appendChild(this._input)
 
         for (let item of this._datatype) {
@@ -93,6 +93,7 @@ export default class PlaneGenerator {
         let clearStorage = document.createElement("button")
         clearStorage.innerHTML = "Clear Previous Map"
         clearStorage.addEventListener("click", () => {
+            this._data = []
             localStorage.setItem("map", JSON.stringify([]))
         })
         let reloadButton = document.createElement("button")
@@ -118,13 +119,14 @@ export default class PlaneGenerator {
                     this._data.push({ y: y, x: x, textureType: "texture" });
                     div.style.backgroundColor = "orange"
                 }
-                else if (this._selected === "color" && this._colorInput.length == 6) {
+                else if (this._selected === "color" && this._colorInput.length == 7) {
                     this._data.push({ y: y, x: x, textureType: "color", color: this._colorInput });
-                    div.style.backgroundColor = "lime"
+                    console.log(this._colorInput)
+                    div.style.backgroundColor = this._colorInput
                 }
                 else {
                     this._data.push({ y: y, x: x, textureType: "texture", color: "#FF00FF" });
-                    div.style.backgroundColor = "lime"
+                    div.style.backgroundColor = "#FF00FF"
                 }
             }
         } else {

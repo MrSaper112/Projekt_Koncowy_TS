@@ -35,7 +35,7 @@ export default class Camera extends Figure {
         this._keys = data.keys || { KeyS: false, KeyW: false, KeyA: false, KeyD: false }
 
         this._keyboardAndMouseManager = new KeyboardAndMouse({ keyboardWork: true, mouseWork: true, keys: this._keys })
-        this._rayCaster = new RayCaster([], false)
+        this._rayCaster = new RayCaster([], true)
 
         this.generateMatrixOfView()
 
@@ -54,7 +54,7 @@ export default class Camera extends Figure {
     }
     calculateAndMove(deltaTime: number) {
         if (this._keyboardAndMouseManager) {
-            this._rayCaster.lookup(9, this._vector)
+            this._rayCaster.lookup(20, this._vector)
             if (this._keyboardAndMouseManager._keys.KeyW || this._keyboardAndMouseManager._keys.KeyS) {
                 const direction = this._keyboardAndMouseManager._keys.KeyW ? -1 : 1;
                 let x = this._vector.x - this._modelMatrix[8] * deltaTime * this._acceleration * direction;

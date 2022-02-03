@@ -9,6 +9,7 @@ import brick from "./textures/brick.jpg";
 import dirtJgp from '../components/textures/grass.jpg'
 import RayCaster from "./engine/addons/RayCaster";
 import Block from "./engine/figure/Block";
+import Sphere from "./engine/figure/Sphere";
 
 export default class MainGame extends MainEngine {
   _dataToBuild: Array<block> | any[];
@@ -34,7 +35,7 @@ export default class MainGame extends MainEngine {
       vector: {
         x: 125, y: 0, z: 125
       }
-    }, { width: 250, depth: 250, widthSegments: 1, depthSegments: 1 })
+    }, { width: 250, depth: 250, widthSegments: 5, depthSegments: 5 })
 
     this._plane._material = new Materials(this._gl, { texture: dirtJgp })
     // let newBlock = new Cube(this._gl, { x: 10, y: 0, z: 0 })
@@ -52,7 +53,9 @@ export default class MainGame extends MainEngine {
       }
       this._squares.push(newBlock)
     })
-
+    let circle = new Sphere(this._gl, { radius: 10, subdivisionsAxis: 10, subdivisionsHeight: 10 }, { x: 125, y: 10, z: 125 })
+    circle._material = new Materials(this._gl, {color:"00F0FF"})
+    this._squares.push(circle)
     this._camera._rayCaster.setBoxes(this._squares)
     requestAnimationFrame(() => this.render(0))
 
@@ -74,7 +77,7 @@ export default class MainGame extends MainEngine {
     this._gl.enable(this._gl.CULL_FACE);
     this._camera.generateMatrixOfView()
 
- 
+
     let num = Date.now()
     this._fps.render(num)
 

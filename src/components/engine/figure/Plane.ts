@@ -10,8 +10,8 @@ export default class Plane extends Figure {
     _dat: { width: number, depth: number, widthSegments: number, depthSegments: number }
     constructor(gl: WebGLRenderingContext, info?: {vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D}, dat?: { width: number, depth: number, widthSegments: number, depthSegments: number }) {
         super(gl, info.vector, info.scale, info.rotation);
+        this._type = "plane"
 
-        this._UUID = generateUUID();
         this._dat = dat
         this._material = new Materials(this._gl, { texture: cobble, normal: false })
         let working = this.createPlaneVertices()

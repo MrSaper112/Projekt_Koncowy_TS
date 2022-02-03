@@ -8,6 +8,7 @@ export class Figure {
     public _matrix4D?: Matrix4D
     public _gl: WebGLRenderingContext;
     public _material?: Materials;
+    public _type?: string
 
     public _positions?: Array<number>
     public _indices?: Array<number>
@@ -68,17 +69,21 @@ export class Figure {
         if (this._material._type === "color") {
             const vertexColor = _prg.returnAttrib(this._gl, prg, 'aVertexColor')
             {
+                if(this._material._faceColors === undefined) {
+                    console.warn(`No material`)
+                    this._material._faceColors = new Array(this._indices.length).fill(this._material._hexColor)
+
+                }
                 var colors: Array<number> = [];
 
                 for (var j = 0; j < this._material._faceColors.length; ++j) {
                     const c = this._material._faceColors[j];
-                    colors = colors.concat(c, c, c, c);
+                    colors = colors.concat(c[0],c[1], c[2], c[3]);
                 }
 
                 const colorBuffer = this._gl.createBuffer();
                 this._gl.bindBuffer(this._gl.ARRAY_BUFFER, colorBuffer);
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(colors), this._gl.STATIC_DRAW);
-
                 this._gl.vertexAttribPointer(vertexColor, 4, this._gl.FLOAT, false, 0, 0);
                 this._gl.enableVertexAttribArray(vertexColor);
             }

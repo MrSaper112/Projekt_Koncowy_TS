@@ -4,6 +4,8 @@ import Materials from "./Materials";
 export default class Block extends Figure {
     constructor(gl: WebGLRenderingContext, vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D, material?: Materials) {
         super(gl, vector, scale, rotation);
+        this._type = "block"
+
         this._material = material || new Materials(gl, { color: '670000' })
 
         this._positions = [

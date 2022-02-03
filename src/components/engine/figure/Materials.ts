@@ -8,7 +8,7 @@ export default class Materials {
     _urlOfTexture: string
     _texture: WebGLTexture
     _repeatTexture: boolean
-
+    _hexColor: Array<number>
     constructor(gl:WebGLRenderingContext,args?: args) {
         this._gl = gl
         this._useNormals = true
@@ -20,7 +20,7 @@ export default class Materials {
                 this._faceColors = args.faces
             }else{
                 const hexToByte = this.hexToBytes(args.color.replace("#",""))
-                this._faceColors = new Array(6).fill(hexToByte)
+                this._hexColor = hexToByte
                 // console.log(hexToByte)
                 // console.log(this._faceColors)
             }
