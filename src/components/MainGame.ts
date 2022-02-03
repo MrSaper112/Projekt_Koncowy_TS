@@ -29,8 +29,8 @@ export default class MainGame extends MainEngine {
   init() {
     this._dataToBuild = JSON.parse(localStorage.getItem("map")) || []
     this._fps = new FPSIndicator()
-    this._camera = new Camera(this._gl, { fov: 90 }, { x: 50, y: 5, z: 50 })
-
+    this._camera = new Camera(this._gl, { fov: 50 }, { x: 50, y: 5, z: 50 })
+    // this._camera.addToRotation({ x: 0, y: 0, z: 45 })
     this._plane = new Plane(this._gl, {
       vector: {
         x: 125, y: 0, z: 125

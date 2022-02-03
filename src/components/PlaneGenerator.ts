@@ -95,6 +95,8 @@ export default class PlaneGenerator {
         clearStorage.addEventListener("click", () => {
             this._data = []
             localStorage.setItem("map", JSON.stringify([]))
+            window.location.reload()
+
         })
         let reloadButton = document.createElement("button")
         reloadButton.innerHTML = "Reload Page"
@@ -105,9 +107,14 @@ export default class PlaneGenerator {
         addons.appendChild(clearStorage)
         addons.appendChild(saveButton)
         addons.appendChild(reloadButton)
+        
+        let creatorDiv = document.createElement("div")
+        creatorDiv.className = "creatorDiv"
 
-        document.body.appendChild(addons)
-        document.body.appendChild(div)
+        creatorDiv.appendChild(addons)
+        creatorDiv.appendChild(div)
+
+        document.body.appendChild(creatorDiv)
     }
     handleClick(y: number, x: number, div: HTMLDivElement) {
         let idx: number = -1;
