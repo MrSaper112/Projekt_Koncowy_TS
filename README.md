@@ -18,14 +18,17 @@ new Sphere (gl: WebGLRenderingContext, build: {radius: number, subdivisionsAxis:
 ![image](https://user-images.githubusercontent.com/49322534/152679790-92b3164c-405f-46b6-8065-daca56973adb.png)
 ![image](https://user-images.githubusercontent.com/49322534/152679797-9be32015-f71a-4db6-bd8e-6183f5efe300.png)
 ![image](https://user-images.githubusercontent.com/49322534/152679805-dfe141bc-1b0e-4c7f-8aba-ea640e160a57.png)
-![image](https://user-images.githubusercontent.com/49322534/152679815-62af6e1c-95b0-431a-abf5-5d575c960382.png)
+![image](https://user-images.githubusercontent.com/49322534/152680160-987600e8-51ad-41ff-9c64-4156884cf904.png)
 ![image](https://user-images.githubusercontent.com/49322534/152679819-d9e3a8fa-3820-4056-b525-5f33486a9e54.png)
 Where this._gl is canvas webgl context created in MainEngine. To use it, you need to extend the main class by  Main Engine.
 
 ### Rendering
 To render each of our predefined classes, create a new function where the blocks will be called with .draw (this._program, this._camera) and then animate it with requestAnimationFrame(() => this.render(0))
+
 For Example:
+
 ![image](https://user-images.githubusercontent.com/49322534/152680025-61c487db-28e8-4e24-a044-6c40bf59c944.png)
+
 This block need to be as default 
 ```
     this._gl.viewport(0, 0, this._gl.canvas.width, this._gl.canvas.height);
