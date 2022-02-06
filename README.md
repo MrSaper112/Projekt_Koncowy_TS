@@ -40,7 +40,7 @@ This block need to be as default
     
     this._camera.generateMatrixOfView()
 ```
-calcutaeAndMove is a function which enables us to move around the map.
+calculateAndMove is a function which enables us to move around the map.
 ```
 this._camera.calculateAndMove(deltaTime)
 ```
