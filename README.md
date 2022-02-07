@@ -2,6 +2,7 @@
 ## Installation
 ```
 - download repo
+npm i
 npx webpack serve
 - open http://localhost:8080/
 ```
