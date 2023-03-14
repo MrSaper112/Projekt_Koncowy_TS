@@ -71,8 +71,6 @@ export class Figure {
             {
                 if(this._material._faceColors === undefined) {
                     console.warn(`No material`)
-                    this._material._faceColors = new Array(this._indices.length).fill(this._material._hexColor)
-
                 }
                 var colors: Array<number> = [];
 
