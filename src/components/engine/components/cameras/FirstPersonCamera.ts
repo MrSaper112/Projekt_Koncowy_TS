@@ -1,13 +1,10 @@
 // import { Program } from "../../../../node_modules/typescript/lib/typescript"
 
-import { Figure, Vector3D } from "../addons/Figure";
-import FigureInterface, { generateUUID } from "../addons/FiguresInterFace"
-import { KeyboardAndMouse, Keys } from "../addons/KeyboardAndMouse";
-import Matrix4D from "../addons/Matrix4D";
-import RayCaster from "../addons/RayCaster";
-import { programArray } from "../addons/webGLutils";
-import Materials from "./Materials";
-export default class Camera extends Figure {
+import { Figure, Vector3D } from "../../addons/Figure";
+import { generateUUID } from "../../addons/FiguresInterFace"
+import { KeyboardAndMouse, Keys } from "../../addons/KeyboardAndMouse";
+import RayCaster from "../../addons/RayCaster";
+export default class FirstPersonCamera extends Figure {
     _fov?: number;
     _aspect?: number
     _zNear?: number
@@ -25,7 +22,7 @@ export default class Camera extends Figure {
 
         this._gl = gl;
         this._fov = this._matrix4D.degToRad(data.fov || 60)
-        this._aspect = this._gl.canvas.clientWidth / this._gl.canvas.clientHeight;
+        this._aspect = this._gl.canvas.width / this._gl.canvas.height;
         this._zNear = data.zNear || 0.1;
         this._zFar = data.zFar || 100000.0;
 
@@ -61,10 +58,10 @@ export default class Camera extends Figure {
                 let y = this._vector.y - this._modelMatrix[9] * deltaTime * this._acceleration * direction;
                 let z = this._vector.z - this._modelMatrix[10] * deltaTime * this._acceleration * direction;
                 let getCollision = this._rayCaster.lookup(9, { x: x, y: y, z: z });
-                if(getCollision.length === 0){
-                    this._vector.x = x 
+                if (getCollision.length === 0) {
+                    this._vector.x = x
                     this._vector.y = y
-                    this._vector.z = z 
+                    this._vector.z = z
                 }
             }
             //a-d

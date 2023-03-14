@@ -1,5 +1,5 @@
-import Camera from "../figure/Camera";
-import Materials from "../figure/Materials";
+import FirstPersonCamera from "../components/cameras/FirstPersonCamera";
+import Materials from "../components/Materials";
 import Matrix4D from "./Matrix4D";
 import { programArray } from "./webGLutils";
 
@@ -12,37 +12,41 @@ export class Figure {
 
     public _positions?: Array<number>
     public _indices?: Array<number>
+    public _baseIndices?: Array<number>
     public _textureCoordinates?: Array<number>
-    public _faceColors?: Array<Array<number>>
+    public _faceColors?: Array<number>
 
     public _vector?: Vector3D;
-    private _scale?: Vector3D;
+    public _scale?: Vector3D;
     public _rotationInDeg?: Vector3D;
-
+    public _angles: number;
+    public _trianglesPerSide: number;
     public _modelMatrix?: Array<number>
     public _viewMatrix?: Array<number>
-    constructor(gl:WebGLRenderingContext,vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D) {
+    constructor(gl: WebGLRenderingContext, vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D) {
         this._UUID = generateUUID()
         this._gl = gl
         this._vector = vector || { x: 0, y: 0, z: 0 }
         this._scale = scale || { x: 1, y: 1, z: 1 }
         this._rotationInDeg = rotation || { x: 0, y: 0, z: 0 }
+        this._baseIndices = null
         this._matrix4D = new Matrix4D();
         this.updateMatrix()
 
     }
-    draw(_prg: programArray, _camera: Camera): void {
+    draw(_prg: programArray, _camera: FirstPersonCamera): void {
         // console.log(_prg);
+
         let prg: WebGLProgram
         if (this._material._type === "color") {
             prg = _prg.shaders.color._prg
         } else if (this._material._type === "texture") {
             prg = _prg.shaders.texture._prg
         }
-
         this._gl.useProgram(prg)
         this._gl.linkProgram(prg)
-
+        this._gl.enable(this._gl.BLEND)
+        this._gl.blendFunc(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA);
         const vertexPosition = _prg.returnAttrib(this._gl, prg, 'aVertexPosition')
         const modelViewMatrixA = _prg.returnUniform(this._gl, prg, 'uModelViewMatrix')
 
@@ -65,54 +69,167 @@ export class Figure {
         // Tell WebGL to use our program when drawing
 
         this._gl.uniformMatrix4fv(modelViewMatrixA, false, mvMatrix);
-
-        if (this._material._type === "color") {
+        if (this._material._type == "color") {
             const vertexColor = _prg.returnAttrib(this._gl, prg, 'aVertexColor')
             {
-                if(this._material._faceColors === undefined) {
-                    console.warn(`No material`)
+                // TODO Change On update by render
+                if (!this._material._createdFaceColors) {
+                    this.constructColorArray()
+                    this._material._createdFaceColors = true
                 }
-                var colors: Array<number> = [];
-
-                for (var j = 0; j < this._material._faceColors.length; ++j) {
-                    const c = this._material._faceColors[j];
-                    colors = colors.concat(c[0],c[1], c[2], c[3]);
-                }
+                // this.constructColorArray()
 
                 const colorBuffer = this._gl.createBuffer();
                 this._gl.bindBuffer(this._gl.ARRAY_BUFFER, colorBuffer);
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(colors), this._gl.STATIC_DRAW);
+                // this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(this._material._faceColors), this._gl.STATIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(this._material._faceColors), this._gl.STATIC_DRAW);
                 this._gl.vertexAttribPointer(vertexColor, 4, this._gl.FLOAT, false, 0, 0);
                 this._gl.enableVertexAttribArray(vertexColor);
             }
-
-        } else if (this._material._type === "texture") {
-            const textureCoord = _prg.returnAttrib(this._gl, prg, "aTextureCoord")
-            const sampler = _prg.returnUniform(this._gl, prg, "uSampler")
-            {
-                const textureCoordBuffer = this._gl.createBuffer();
-                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, textureCoordBuffer);
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(this._textureCoordinates), this._gl.STATIC_DRAW);
-
-                this._gl.vertexAttribPointer(textureCoord, 2, this._gl.FLOAT, false, 0, 0);
-                this._gl.enableVertexAttribArray(textureCoord);
-
-                // Tell WebGL we want to affect texture unit 0
-                this._gl.activeTexture(this._gl.TEXTURE0);
-
-                // Bind the texture to texture unit 0
-                this._gl.bindTexture(this._gl.TEXTURE_2D, this._material._texture);
-                // Tell the shader we bound the texture to texture unit 0
-                this._gl.uniform1i(sampler, 0);
-            }
-
         }
+        // } else if (this._material._type === "texture") {
+        //     const textureCoord = _prg.returnAttrib(this._gl, prg, "aTextureCoord")
+        //     const sampler = _prg.returnUniform(this._gl, prg, "uSampler")
+        //     {
+        //         const textureCoordBuffer = this._gl.createBuffer();
+        //         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, textureCoordBuffer);
+        //         this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(this._textureCoordinates), this._gl.STATIC_DRAW);
+
+        //         this._gl.vertexAttribPointer(textureCoord, 2, this._gl.FLOAT, false, 0, 0);
+        //         this._gl.enableVertexAttribArray(textureCoord);
+
+        //         // Tell WebGL we want to affect texture unit 0
+        //         this._gl.activeTexture(this._gl.TEXTURE0);
+
+        //         // Bind the texture to texture unit 0
+        //         this._gl.bindTexture(this._gl.TEXTURE_2D, this._material._texture);
+        //         // Tell the shader we bound the texture to texture unit 0
+        //         this._gl.uniform1i(sampler, 0);
+        //     }
+
+        // }
 
         {
             const vertexCount = this._indices.length
             const type = this._gl.UNSIGNED_SHORT;
             const offset = 0;
             this._gl.drawElements(this._gl.TRIANGLES, vertexCount, type, offset);
+        }
+    }
+    private constructColorArray() {
+
+        if (typeof this._material._color === 'string') {
+            console.log(" Only String")
+            let color = this._material.hexToBytes(this._material._color as String)
+            this._material._faceColors = []
+            color[3] = this._material._alpha
+
+            for (let i = 0; i < this._indices.length; i++) {
+                this._material._faceColors.push(color[0] / 255, color[1] / 255, color[2] / 255, color[3])
+            }
+        }
+
+        // Array of bytes
+        if (this._material.isArrayOfBytes(this._material._color)) {
+            console.log("Array of Byte")
+            this._material._faceColors = []
+            let color = this._material._color as Array<number>
+            color[3] = this._material._alpha
+
+            for (let i = 0; i < this._indices.length; i++) {
+                this._material._faceColors.push(color[0] / 255, color[1] / 255, color[2] / 255, color[3])
+            }
+        }
+
+        //Array of String
+        if (this._material.isStringArray(this._material._color) && this._type !== "sphere" && this._type !== "plane") {
+            console.log("Array of String")
+            let newColorArray: Array<Array<number>> = new Array();
+            (this._material._color as Array<String>).map((itm: String) => newColorArray.push(this._material.hexToBytes(itm)))
+            if (newColorArray.length < 6) {
+                let color = newColorArray[newColorArray.length - 1]
+                for (let i = newColorArray.length; i < 3 * this._trianglesPerSide; i++) newColorArray.push(color)
+            }
+            newColorArray.forEach((itm: Array<number>) => itm[3] = this._material._alpha)
+            this._material._color = newColorArray.map((item: (Array<number>)) => { return item });
+        }
+
+
+        //Array of array bytes
+        if (this._material.isArrayOfArrayBytes(this._material._color) && this._type !== "sphere" && this._type !== "plane") {
+            console.log("Array of Array Byte")
+            let newColorArray: Array<Array<number>> = new Array();
+            let isFirst = false
+            let firstColor: Array<number>
+
+            if (this._type == "cone") {
+
+                (this._material._color as Array<Array<Number>>).map((itm: Array<number>) => {
+                    console.log(itm)
+                    let item = itm.map((itm: number) => itm / 255)
+                    item[3] = this._material._alpha
+                    if (this._angles >= 3 && !isFirst) {
+                        if ((this._material._color as Array<Array<Number>>).length == 1)
+                            for (let i = 0; i < this._angles * 6; i++) newColorArray.push(item)
+                        else {
+                            for (let i = 0; i < this._angles * 2; i++) newColorArray.push(item)
+
+                        }
+                        firstColor = item
+                        isFirst = true
+                    }
+                })
+                if ((this._material._color as Array<Array<Number>>).length > 1) {
+                    let baseColor = []
+                    let clrIdx = 1;
+                    for (let i = 0; i < this._angles; i++) {
+                        // testa.forEach((itm: Array<number>) => newColorArray.push(itm))
+                        let item = (this._material._color as Array<Array<Number>>)[clrIdx].map((itm: number) => itm / 255)
+                        item[3] = this._material._alpha
+
+                        for (let x = 0; x < 3; x++) baseColor.push(item)
+
+                        if (clrIdx !== this._material._color.length - 1) clrIdx++
+                    }
+
+                    baseColor.forEach((itm: Array<number>) => newColorArray.push(itm))
+
+                }
+            }
+
+
+            (this._material._color as Array<Array<Number>>).map((itm: Array<number>) => {
+                let item = itm.map((item: number, idx: number) => {
+                    if (idx !== 3) return item / 255
+                })
+                item[3] = itm[3]
+                if (item[3] == undefined) item[3] = this._material._alpha
+
+                switch (this._type) {
+                    case "block":
+                        for (let i = 0; i < 4; i++)  newColorArray.push(item)
+                        break;
+                }
+            })
+
+            console.log(newColorArray)
+
+            if (newColorArray.length < this._indices.length) {
+                let color = (this._material._color as Array<Array<number>>)[this._material._color.length - 1] as Array<number>
+                let color2 = color.map((item: number, idx: number) => {
+                    if (idx !== 3) return item / 255
+                })
+                color2[3] = color[3]
+                if (color2[3] == undefined) color2[3] = this._material._alpha
+                switch (this._type) {
+                    case "block":
+                        for (let i = newColorArray.length; i < this._indices.length; i++) newColorArray.push(color2)
+                        break;
+
+                }
+            }
+            console.log(newColorArray)
+            this._material._faceColors = newColorArray.flat()
         }
     }
     private updateMatrix(): void {
@@ -208,7 +325,7 @@ interface blockPlacement {
     texcoord: Array<number>,
     indices: Array<number>
 }
-interface position{
+interface position {
     vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D
 }
 export interface Vector3D {

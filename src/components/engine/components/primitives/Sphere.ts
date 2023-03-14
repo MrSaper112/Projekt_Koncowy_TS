@@ -1,5 +1,5 @@
-import { Figure, Vector3D } from "../addons/Figure";
-import Materials from "./Materials";
+import { Figure, Vector3D } from "../../addons/Figure";
+import Materials from "../Materials";
 import cobble from '../../textures/cobble.png'
 
 export default class Sphere extends Figure {
@@ -10,7 +10,7 @@ export default class Sphere extends Figure {
         radius: number, subdivisionsAxis: number, subdivisionsHeight: number
     }, vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D, material?: Materials) {
         super(gl, vector, scale, rotation);
-        this._material = material || new Materials(gl, { texture: cobble, normal: false })
+        this._material = material || Materials.color({ gl, clr: "#ff00ff" });
         this._subdivisionsAxis = build.subdivisionsAxis
         this._subdivisionsHeight = build.subdivisionsHeight
         this._radius = build.radius

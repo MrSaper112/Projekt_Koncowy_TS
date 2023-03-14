@@ -1,4 +1,3 @@
-import { fps } from "../StaticItems";
 import webGLutils, { programArray } from "./addons/webGLutils";
 
 export class MainEngine {
@@ -37,7 +36,7 @@ export class MainEngine {
     async draw() {
         if (this._cnv) {
             //Get context from webgl!
-            const gl = this._cnv.getContext("webgl2");
+            const gl = this._cnv.getContext("webgl2", { antialias: false, premultipliedAlpha: false });
             // Only continue if WebGL is available and working
             console.log(gl)
             if (gl === null) {
@@ -48,27 +47,27 @@ export class MainEngine {
             // const sliderMan = new sliderManager()    
             this._program = this._webGLutils.newProgram(gl);
             this._gl = gl
-//             let f = () => {
-//                 return Math.floor(Math.random() * (50 + 10 + 1) - 10)
-//             }
-//             let fS = () => {
-//                 return Math.floor(Math.random() * (4 - 1 + 1) + 1)
-//             }
-//             // sliderMan.createSlider(-100, 100, 0.1, 0, "Camera x", (e: number) => { this._camera.updateX(e) });
-//             // sliderMan.createSlider(-100, 100, 0.1, 0, "Camera z", (e: number) => { this._camera.updateZ(e) });
-//             // sliderMan.createSlider(-100, 100, 0.1, 0, "Camera y", (e: number) => { this._camera.updateY(e) });
+            //             let f = () => {
+            //                 return Math.floor(Math.random() * (50 + 10 + 1) - 10)
+            //             }
+            //             let fS = () => {
+            //                 return Math.floor(Math.random() * (4 - 1 + 1) + 1)
+            //             }
+            //             // sliderMan.createSlider(-100, 100, 0.1, 0, "Camera x", (e: number) => { this._camera.updateX(e) });
+            //             // sliderMan.createSlider(-100, 100, 0.1, 0, "Camera z", (e: number) => { this._camera.updateZ(e) });
+            //             // sliderMan.createSlider(-100, 100, 0.1, 0, "Camera y", (e: number) => { this._camera.updateY(e) });
 
-//             for (let x = 0; x < 100; x++) {
-//                 let newCube = new Cube(gl, { x: f(), y: f(), z: f() });
-//                 newCube._scale = { x: 3, y: 3, z: 3 };
-// 3
-//                 if (Math.random() < 0.5) newCube._material = new Materials(gl, { color: '#ff00AA' })
-//                 else newCube._material = new Materials(gl, { texture: dirtJgp, normal: false })
+            //             for (let x = 0; x < 100; x++) {
+            //                 let newCube = new Cube(gl, { x: f(), y: f(), z: f() });
+            //                 newCube._scale = { x: 3, y: 3, z: 3 };
+            // 3
+            //                 if (Math.random() < 0.5) newCube._material = new Materials(gl, { color: '#ff00AA' })
+            //                 else newCube._material = new Materials(gl, { texture: dirtJgp, normal: false })
 
-//                 this.square.push(newCube);
+            //                 this.square.push(newCube);
 
-//             }
-//             this._plane = new Plane({x:0, y: -10, z: 0},{width:100,depth:100,widthSegments:10,depthSegments:10},gl)
+            //             }
+            //             this._plane = new Plane({x:0, y: -10, z: 0},{width:100,depth:100,widthSegments:10,depthSegments:10},gl)
 
             // let newCube2 = new Cube(gl, { x: 10, y: -2, z: -3 });
             // newCube2._scale = { x: 1, y: 1, z: 1 };
@@ -83,7 +82,7 @@ export class MainEngine {
 
     }
 
-    render(now:number) {
+    render(now: number) {
         // // Convert to seconds
         // now *= 0.001;
         // // Subtract the previous time from the current time

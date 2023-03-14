@@ -18,7 +18,9 @@ void main(void) {
 
 
 export const fShaderColor = `
-varying lowp vec4 vColor;
+precision mediump float;
+
+varying  vec4 vColor;
 void main(void) {
   gl_FragColor = vColor;
 }`
@@ -27,7 +29,7 @@ export const vShaderColor = `
 attribute vec4 aVertexPosition;
 attribute vec4 aVertexColor;
 uniform mat4 uModelViewMatrix;
-varying lowp vec4 vColor;
+varying  vec4 vColor;
 void main(void) {
   gl_Position = uModelViewMatrix * aVertexPosition;
   vColor = aVertexColor;

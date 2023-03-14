@@ -1,19 +1,19 @@
-import FigureInterface, { generateUUID } from "../addons/FiguresInterFace";
-import Matrix4D from "../addons/Matrix4D";
-import { programArray } from "../addons/webGLutils";
-import Materials from "./Materials";
+import FigureInterface, { generateUUID } from "../../addons/FiguresInterFace";
+import Matrix4D from "../../addons/Matrix4D";
+import { programArray } from "../../addons/webGLutils";
+import Materials from "../Materials";
 import cobble from '../../textures/cobble.png'
-import Camera from "./Camera";
-import { Figure, Vector3D } from "../addons/Figure";
+import FirstPersonCamera from "../cameras/FirstPersonCamera";
+import { Figure, Vector3D } from "../../addons/Figure";
 
 export default class Plane extends Figure {
     _dat: { width: number, depth: number, widthSegments: number, depthSegments: number }
-    constructor(gl: WebGLRenderingContext, info?: {vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D}, dat?: { width: number, depth: number, widthSegments: number, depthSegments: number }) {
+    constructor(gl: WebGLRenderingContext, info?: { vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D }, dat?: { width: number, depth: number, widthSegments: number, depthSegments: number }) {
         super(gl, info.vector, info.scale, info.rotation);
         this._type = "plane"
 
         this._dat = dat
-        this._material = new Materials(this._gl, { texture: cobble, normal: false })
+        this._material = Materials.color({ gl: this._gl, clr: "#ff00ff" });
         let working = this.createPlaneVertices()
 
         this._positions = working.position
