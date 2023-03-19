@@ -1,19 +1,26 @@
-import webGLutils, { programArray } from "./addons/webGLutils";
+import { sort } from "../../../node_modules/fast-sort/dist/sort.min";
+import { Figure } from "./addons/Figure";
+import { programArray, WebGlWProgram } from "./addons/interfaces/WebglExtender";
+import webGLutils from "./addons/webGLutils";
+import FirstPersonCamera from "./components/cameras/FirstPersonCamera";
+import FreeMoveCamera from "./components/cameras/FreeMoveCamera";
+import Materials from "./components/Materials";
+import Block from "./components/primitives/Block";
+import Cone from "./components/primitives/Cone";
 
-export class MainEngine {
+export abstract class Engine {
     public _cnv: HTMLCanvasElement
     public _program: programArray
     public _webGLutils: webGLutils
-    public _gl: WebGLRenderingContext
+    public static _gl: WebGlWProgram
     time: number
     constructor(plane: HTMLCanvasElement) {
         this._cnv = plane
-        // console.log(vertexShader.default, fragmetalShader.default)
+        Engine._gl = new WebGlWProgram();
         this._webGLutils
         this.time = 0
         this.createCanvas()
     }
-
     async createCanvas() {
         let body = document.querySelectorAll("body")[0].children as HTMLCollection
         for (let x = 0; x < body.length; x++) {
@@ -38,15 +45,17 @@ export class MainEngine {
             //Get context from webgl!
             const gl = this._cnv.getContext("webgl2", { antialias: false, premultipliedAlpha: false });
             // Only continue if WebGL is available and working
-            console.log(gl)
             if (gl === null) {
                 alert("Unable to initialize WebGL. Your browser or machine may not support it.");
                 return;
             }
             this._webGLutils = new webGLutils()
             // const sliderMan = new sliderManager()    
-            this._program = this._webGLutils.newProgram(gl);
-            this._gl = gl
+            Engine._gl.programs = this._webGLutils.newProgram(gl)
+            Engine._gl.gl = gl
+
+            console.log(Engine._gl);
+
             //             let f = () => {
             //                 return Math.floor(Math.random() * (50 + 10 + 1) - 10)
             //             }
@@ -82,7 +91,21 @@ export class MainEngine {
 
     }
 
-    render(now: number) {
+    engineRender(camera: FreeMoveCamera | FirstPersonCamera, items?: any) {
+        let coneArray: Array<Cone> = [];
+        let cubeArray: Array<Block> = [];
+        if (items instanceof Array) {
+            const sorted = sort(items).desc(u => u._type);
+            sorted.forEach((square: Figure) => {
+                if (square instanceof Cone) coneArray.push(square);
+                if (square instanceof Block) cubeArray.push(square);
+            });
+        }
+
+        const coneArraySorted = sort(coneArray).desc(u => u._angles);
+        coneArraySorted.forEach((cube: Figure) => cube.draw(camera))
+        cubeArray.forEach((cube: Figure) => cube.draw(camera))
+
         // // Convert to seconds
         // now *= 0.001;
         // // Subtract the previous time from the current time

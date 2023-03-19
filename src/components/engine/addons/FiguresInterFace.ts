@@ -1,8 +1,8 @@
 import FirstPersonCamera from "../components/cameras/FirstPersonCamera";
 import Materials from "../components/Materials";
 import { Vector3D } from "./Figure";
+import { programArray } from "./interfaces/WebglExtender";
 import Matrix4D from "./Matrix4D";
-import { programArray } from "./webGLutils";
 
 export default interface FigureInterface {
     _UUID: string;

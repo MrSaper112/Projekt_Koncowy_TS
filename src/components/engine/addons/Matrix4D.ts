@@ -5,10 +5,12 @@ export default class Matrix4D {
         this._Matrix = this.generateMatrix();
     }
     generateMatrix() {
-        return [1, 0, 0, 0,
+        return [
+            1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
-            0, 0, 0, 1]
+            0, 0, 0, 1
+        ]
     }
     radToDeg(r: number) {
         return (r * 180) / Math.PI;
@@ -66,7 +68,7 @@ export default class Matrix4D {
 
         return [resultX, resultY, resultZ, resultW];
     }
-   
+
     translate(m: Array<number>, translateX: number = 0, translateY: number = 0, translateZ: number = 0) {
         const matrix = [
             1, 0, 0, 0,

@@ -2,7 +2,7 @@ export default class Materials {
     _useNormals: boolean
     _textureReapet: boolean
     _type: String
-    _faceColors: Array<number>
+    _faceColors: Uint8Array
     _gl: WebGLRenderingContext
     _urlOfTexture: String
     _texture: WebGLTexture
@@ -17,6 +17,7 @@ export default class Materials {
 
     //Wireframe
     public _wireFrameColor: Array<number>
+    public _wireframe: boolean
     _createdFaceColors: boolean
 
 
@@ -52,14 +53,13 @@ export default class Materials {
     //     }
 
     // }
-    public static color({ gl, clr, alpha, isSided }: { gl: WebGLRenderingContext; clr: String | Array<String> | Array<Array<Number>> | Array<Number>; alpha?: number; isSided?: boolean }): Materials {
+    public static color({ clr, alpha, wireframe }: { clr?: String | Array<String> | Array<Array<Number>> | Array<Number>; alpha?: number, wireframe?: boolean }): Materials {
         let cls = new Materials();
-        cls._gl = gl;
         cls._type = "color"
         cls._alpha = alpha || 1
-        cls._isSided = isSided || false
         cls._createdFaceColors = false
-        cls._color = clr
+        cls._color = clr || [100, 100, 100, 1]
+        cls._wireframe = wireframe || false
         return cls
     }
     public static texture(gl: WebGLRenderingContext, args: args): Materials {

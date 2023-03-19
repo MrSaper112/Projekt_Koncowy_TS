@@ -2,10 +2,11 @@
 
 import { Figure, Vector3D } from "../../addons/Figure";
 import FigureInterface, { generateUUID } from "../../addons/FiguresInterFace";
+import { programArray } from "../../addons/interfaces/WebglExtender";
 import { KeyboardAndMouse, Keys } from "../../addons/KeyboardAndMouse";
 import Matrix4D from "../../addons/Matrix4D";
 import RayCaster from "../../addons/RayCaster";
-import { programArray } from "../../addons/webGLutils";
+import { Engine } from "../../Engine";
 import Materials from "../Materials";
 export default class FreeMoveCamera extends Figure {
     _fov?: number;
@@ -21,7 +22,6 @@ export default class FreeMoveCamera extends Figure {
     _rayCaster: RayCaster;
     _speed: number;
     constructor(
-        gl: WebGLRenderingContext,
         data: {
             fov?: number;
             aspect?: number;
@@ -36,12 +36,11 @@ export default class FreeMoveCamera extends Figure {
         scale?: Vector3D,
         rotation?: Vector3D
     ) {
-        super(gl, vector, scale, rotation);
+        super(vector, scale, rotation);
         this._UUID = generateUUID();
 
-        this._gl = gl;
         this._fov = this._matrix4D.degToRad(data.fov || 60);
-        this._aspect = this._gl.canvas.width / this._gl.canvas.height;
+        this._aspect = Engine._gl.gl.canvas.width / Engine._gl.gl.canvas.height;
         this._zNear = data.zNear || 0.1;
         this._zFar = data.zFar || 100000.0;
 
@@ -70,10 +69,10 @@ export default class FreeMoveCamera extends Figure {
         this._perspectiveMatrix = this._matrix4D.perspective(this._fov, this._aspect, this._zNear, this._zFar)
 
         this._modelMatrix = this._matrix4D.generateMatrix()
-        this._modelMatrix = this._matrix4D.translate(this._modelMatrix, this._vector.x, this._vector.y, -this._vector.z)
-        this._modelMatrix = this._matrix4D.yRotate(this._modelMatrix, this._rotationInDeg.y)
-        this._modelMatrix = this._matrix4D.zRotate(this._modelMatrix, this._rotationInDeg.z)
-        this._modelMatrix = this._matrix4D.xRotate(this._modelMatrix, this._rotationInDeg.x)
+        this._modelMatrix = this._matrix4D.translate(this._modelMatrix, this.vectorX, this.vectorY, this.vectorZ)
+        this._modelMatrix = this._matrix4D.yRotate(this._modelMatrix, this.rotateY)
+        this._modelMatrix = this._matrix4D.zRotate(this._modelMatrix, this.rotateZ)
+        this._modelMatrix = this._matrix4D.xRotate(this._modelMatrix, this.rotateX)
         this._modelMatrix = this._matrix4D.inverse(this._modelMatrix)
 
         this._viewProjection = this._matrix4D.multiplyMatrices(this._perspectiveMatrix, this._modelMatrix);
@@ -81,10 +80,10 @@ export default class FreeMoveCamera extends Figure {
     }
     calculateAndMove(deltaTime: number) {
         if (this._keyboardAndMouseManager._mouseWork) {
-            this._rotationInDeg.x += deltaTime * 36 * (this._speed / 2) * -this._keyboardAndMouseManager._positionOfMouse.y
+            this.rotateX += deltaTime * 36 * (this._speed / 2) * -this._keyboardAndMouseManager._positionOfMouse.y
             this._keyboardAndMouseManager._positionOfMouse.y = 0;
 
-            this._rotationInDeg.y += deltaTime * 36 * (this._speed / 2) * -this._keyboardAndMouseManager._positionOfMouse.x
+            this.rotateY += deltaTime * 36 * (this._speed / 2) * -this._keyboardAndMouseManager._positionOfMouse.x
             this._keyboardAndMouseManager._positionOfMouse.x = 0;
 
 
@@ -94,13 +93,14 @@ export default class FreeMoveCamera extends Figure {
                 this._keyboardAndMouseManager._keys.KeyW ||
                 this._keyboardAndMouseManager._keys.KeyS
             ) {
-                const direction = this._keyboardAndMouseManager._keys.KeyW ? -1 : 1;
-                let x = this._vector.x - this._modelMatrix[8] * deltaTime * this._acceleration * direction * this._speed;
-                let y = this._vector.y - this._modelMatrix[9] * deltaTime * this._acceleration * direction * this._speed;
-                let z = this._vector.z - this._modelMatrix[10] * deltaTime * this._acceleration * direction * this._speed;
-                this._vector.x = x
-                this._vector.y = y
-                this._vector.z = z
+
+                const direction = this._keyboardAndMouseManager._keys.KeyW ? 1 : -1;
+                let x = this.vectorX - this._modelMatrix[8] * deltaTime * this._acceleration * direction * this._speed;
+                let y = this.vectorY - this._modelMatrix[9] * deltaTime * this._acceleration * direction * this._speed;
+                let z = this.vectorZ - this._modelMatrix[10] * deltaTime * this._acceleration * direction * this._speed;
+                this.vectorX = x
+                this.vectorY = y
+                this.vectorZ = z
 
 
             }
@@ -111,12 +111,12 @@ export default class FreeMoveCamera extends Figure {
                 this._keyboardAndMouseManager._keys.Space
             ) {
                 const direction = this._keyboardAndMouseManager._keys.ShiftLeft ? 1 : -1;
-                let x = this._vector.x - this._modelMatrix[4] * deltaTime * this._acceleration * direction * this._speed;
-                let y = this._vector.y - this._modelMatrix[5] * deltaTime * this._acceleration * direction * this._speed;
-                let z = this._vector.z - this._modelMatrix[6] * deltaTime * this._acceleration * direction * this._speed;
-                this._vector.x = x
-                this._vector.y = y
-                this._vector.z = z
+                let x = this.vectorX - this._modelMatrix[4] * deltaTime * this._acceleration * direction * this._speed;
+                let y = this.vectorY - this._modelMatrix[5] * deltaTime * this._acceleration * direction * this._speed;
+                let z = this.vectorZ - this._modelMatrix[6] * deltaTime * this._acceleration * direction * this._speed;
+                this.vectorX = x
+                this.vectorY = y
+                this.vectorZ = z
             }
 
             // //a-d
@@ -125,12 +125,12 @@ export default class FreeMoveCamera extends Figure {
                 this._keyboardAndMouseManager._keys.KeyD
             ) {
                 const direction = this._keyboardAndMouseManager._keys.KeyD ? -1 : 1;
-                let x = this._vector.x - this._modelMatrix[0] * deltaTime * this._acceleration * direction * this._speed;
-                let y = this._vector.y - this._modelMatrix[1] * deltaTime * this._acceleration * direction * this._speed;
-                let z = this._vector.z - this._modelMatrix[2] * deltaTime * this._acceleration * direction * this._speed;
-                this._vector.x = x
-                this._vector.y = y
-                this._vector.z = z
+                let x = this.vectorX - this._modelMatrix[0] * deltaTime * this._acceleration * direction * this._speed;
+                let y = this.vectorY - this._modelMatrix[1] * deltaTime * this._acceleration * direction * this._speed;
+                let z = this.vectorZ - this._modelMatrix[2] * deltaTime * this._acceleration * direction * this._speed;
+                this.vectorX = x
+                this.vectorY = y
+                this.vectorZ = z
             }
         }
     }

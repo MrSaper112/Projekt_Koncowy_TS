@@ -7,9 +7,9 @@ export default class Cone extends Figure {
     _subdivisionsHeight: number
     _radius: number
     _height: number
-    constructor(gl: WebGLRenderingContext, build: { radius: number, angles: number, height?: number }, vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D, material?: Materials) {
-        super(gl, vector, scale, rotation);
-        this._material = material || Materials.color({ gl, clr: "#ff00ff" });
+    constructor(build: { radius: number, angles: number, height?: number }, vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D, material?: Materials) {
+        super(vector, scale, rotation);
+        this._material = material || Materials.color({ clr: "#ff00ff" });
         this._angles = build.angles || 0
         this._radius = build.radius
         this._height = build.height
@@ -18,84 +18,17 @@ export default class Cone extends Figure {
 
         if (this._angles >= 3) {
             let working = this.createVertices()
-            console.log(working)
-
             this._positions = working.position
             this._textureCoordinates = []
             this._indices = working.indices
             this._baseIndices = working.baseInices
+            this.initBuffer()
         }
     }
-    createSphereVertices() {
-        if (this._subdivisionsAxis <= 0 || this._subdivisionsHeight <= 0) {
-            throw Error('subdivisionAxis and subdivisionHeight must be > 0');
-        }
-
-        let opt_startLatitudeInRadians = 0;
-        let opt_endLatitudeInRadians = Math.PI;
-        let opt_startLongitudeInRadians = 0;
-        let opt_endLongitudeInRadians = (Math.PI * 2);
-
-        const latRange = opt_endLatitudeInRadians - opt_startLatitudeInRadians;
-        const longRange = opt_endLongitudeInRadians - opt_startLongitudeInRadians;
-
-        // We are going to generate our sphere by iterating through its
-        // spherical coordinates and generating 2 triangles for each quad on a
-        // ring of the sphere.
-        const numVertices = (this._subdivisionsAxis + 1) * (this._subdivisionsHeight + 1);
-        const positions = this.createAugmentedTypedArray(3, numVertices);
-        const normals = this.createAugmentedTypedArray(3, numVertices);
-        const texCoords = this.createAugmentedTypedArray(2, numVertices);
-
-        // Generate the individual vertices in our vertex buffer.
-        for (let y = 0; y <= this._subdivisionsHeight; y++) {
-            for (let x = 0; x <= this._subdivisionsAxis; x++) {
-                // Generate a vertex based on its spherical coordinates
-                const u = x / this._subdivisionsAxis;
-                const v = y / this._subdivisionsHeight;
-                const theta = longRange * u + opt_startLongitudeInRadians;
-                const phi = latRange * v + opt_startLatitudeInRadians;
-                const sinTheta = Math.sin(theta);
-                const cosTheta = Math.cos(theta);
-                const sinPhi = Math.sin(phi);
-                const cosPhi = Math.cos(phi);
-                const ux = cosTheta * sinPhi;
-                const uy = cosPhi;
-                const uz = sinTheta * sinPhi;
-                positions.push(this._radius * ux, this._radius * uy, this._radius * uz);
-                normals.push(ux, uy, uz);
-                texCoords.push(1 - u, v);
-            }
-        }
-
-        const numVertsAround = this._subdivisionsAxis + 1;
-        const indices = this.createAugmentedTypedArray(3, this._subdivisionsAxis * this._subdivisionsHeight * 2, Uint16Array);
-        for (let x = 0; x < this._subdivisionsAxis; x++) {
-            for (let y = 0; y < this._subdivisionsHeight; y++) {
-                // Make triangle 1 of quad.
-                indices.push(
-                    (y + 0) * numVertsAround + x,
-                    (y + 0) * numVertsAround + x + 1,
-                    (y + 1) * numVertsAround + x);
-
-                // Make triangle 2 of quad.
-                indices.push(
-                    (y + 1) * numVertsAround + x,
-                    (y + 0) * numVertsAround + x + 1,
-                    (y + 1) * numVertsAround + x + 1);
-            }
-        }
-
-        return {
-            position: positions,
-            normal: normals,
-            textureCoordinates: texCoords,
-            indices: indices,
-        };
-    }
-
     createVertices() {
-        const positions: Array<number> = []
+        const positions = []
+        const indices: Array<number> = []
+
         const normals = this.createAugmentedTypedArray(3, this._angles);
         const texCoords = this.createAugmentedTypedArray(2, this._angles);
 
@@ -113,7 +46,6 @@ export default class Cone extends Figure {
         }
         for (var i = 0; i < this._angles; i++) positions.push(0, 0, 0)
 
-        const indices: Array<number> = []
         let baseIndices = []
         let coneIndices = []
         for (let i = 0; i < this._angles; i++) {
@@ -131,7 +63,6 @@ export default class Cone extends Figure {
             pack.push([x, y, z]);
         }
         for (let i = 0; i < this._angles; i++) {
-            console.warn(pack[i], pack[(i + 1) % this._angles], [0, this._height, 0]);
             pack[i].forEach((itm: number) => positions.push(itm));
             pack[(i + 1) % this._angles].forEach((itm: number) => positions.push(itm));
             [0, this._height, 0].forEach((itm: number) => positions.push(itm));
@@ -145,9 +76,9 @@ export default class Cone extends Figure {
         coneIndices.forEach((itm: number) => indices.push(itm));
 
         return {
-            position: positions,
+            position: new Float32Array(positions),
             normal: normals,
-            indices: indices,
+            indices: new Uint16Array(indices),
             baseInices: baseIndices
         }
     }
