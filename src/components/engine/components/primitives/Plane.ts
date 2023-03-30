@@ -2,12 +2,12 @@ import FigureInterface, { generateUUID } from "../../addons/FiguresInterFace";
 import Matrix4D from "../../addons/Matrix4D";
 import Materials from "../Materials";
 import cobble from '../../textures/cobble.png'
-import FirstPersonCamera from "../cameras/FirstPersonCamera";
+// import FirstPersonCamera from "../cameras/FirstPersonCamera";
 import { Figure, Vector3D } from "../../addons/Figure";
 
 export default class Plane extends Figure {
     _dat: { width: number, depth: number, widthSegments: number, depthSegments: number }
-    constructor(info?: { vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D }, dat?: { width: number, depth: number, widthSegments: number, depthSegments: number }) {
+    constructor(info?: { vector?: vec3, scale?: vec3, rotation?: vec3 }, dat?: { width: number, depth: number, widthSegments: number, depthSegments: number }) {
         super(info.vector, info.scale, info.rotation);
         this._type = "plane"
 

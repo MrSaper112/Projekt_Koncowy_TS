@@ -10,7 +10,7 @@ export class KeyboardAndMouse {
     }) {
         this._keyboardWork = data.keyboardWork || false;
         this._mouseWork = data.mouseWork || false;
-        this._keys = data.keys || null;
+        this._keys = data.keys;
         this._positionOfMouse = {
             x: 0,
             y: 0,
@@ -23,8 +23,6 @@ export class KeyboardAndMouse {
         if (this._keyboardWork) {
             document.addEventListener("keydown", (e) => {
                 if (this._keys) {
-                    console.log(e.code);
-
                     Object.keys(this._keys).forEach((key) => {
                         if (key === e.code) {
                             this._keys[key as keyof Keys] = true;
@@ -33,11 +31,13 @@ export class KeyboardAndMouse {
                 }
             });
             document.addEventListener("keyup", (e) => {
-                Object.keys(this._keys).forEach((key) => {
-                    if (key === e.code) {
-                        this._keys[key as keyof Keys] = false;
-                    }
-                });
+                if (this._keys) {
+                    Object.keys(this._keys).forEach((key) => {
+                        if (key === e.code) {
+                            this._keys[key as keyof Keys] = false;
+                        }
+                    });
+                }
             });
         }
         if (this._mouseWork) {

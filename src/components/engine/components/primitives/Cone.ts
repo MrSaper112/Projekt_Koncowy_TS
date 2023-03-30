@@ -7,7 +7,7 @@ export default class Cone extends Figure {
     _subdivisionsHeight: number
     _radius: number
     _height: number
-    constructor(build: { radius: number, angles: number, height?: number }, vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D, material?: Materials) {
+    constructor(build: { radius: number, angles: number, height?: number }, vector?: vec3, scale?: vec3, rotation?: vec3, material?: Materials) {
         super(vector, scale, rotation);
         this._material = material || Materials.color({ clr: "#ff00ff" });
         this._angles = build.angles || 0

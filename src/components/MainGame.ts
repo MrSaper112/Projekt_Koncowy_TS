@@ -1,5 +1,5 @@
 import FPSIndicator from "./engine/addons/FpsIndicator";
-import FirstPersonCamera from "./engine/components/cameras/FirstPersonCamera";
+// import FirstPersonCamera from "./engine/components/cameras/FirstPersonCamera";
 import { Engine } from "./engine/Engine";
 import { canvas } from "./StaticItems";
 import FiguresInterFace from "./engine/addons/FiguresInterFace";
@@ -10,10 +10,12 @@ import dirtJgp from "../components/textures/grass.jpg";
 import RayCaster from "./engine/addons/RayCaster";
 import Block from "./engine/components/primitives/Block";
 // import Sphere from "./engine/components/primitives/Sphere";
-import FreeMoveCamera from "./engine/components/cameras/FreeMoveCamera";
+import FreeMoveCamera from "./engine/components/cameras/FPSCamera";
 import { Figure } from "./engine/addons/Figure";
 import Cone from "./engine/components/primitives/Cone";
 import Plane from "./engine/components/primitives/Plane";
+import { vec3 } from "./engine/math/gl-matrix";
+import { KeyboardAndMouse } from "./engine/addons/KeyboardAndMouse";
 // import Cone from "./engine/components/primitives/Cone";
 
 export default class MainGame extends Engine {
@@ -34,13 +36,22 @@ export default class MainGame extends Engine {
   init() {
     this._dataToBuild = JSON.parse(localStorage.getItem("map")) || [];
     this._fps = new FPSIndicator();
-    this._camera = new FreeMoveCamera({ fov: 50 }, 2, { x: 50, y: 5, z: 50 });
+    let keyboard = new KeyboardAndMouse({
+      keyboardWork: true,
+      mouseWork: true,
+      keys: {
+        KeyS: false,
+        KeyW: false,
+        KeyA: false,
+        KeyD: false,
+        Space: false,
+        ShiftLeft: false,
+      }
+    });
+    this._camera = new FreeMoveCamera({ fov: 50, keyboard: keyboard, keyboardWork: true }, vec3.fromValues(500, 150, 800));
     // this._camera.addToRotation({ x: 0, y: 0, z: 45 })
     this._plane = new Plane({
-      vector: {
-        x: 500,
-        y: 0, z: 500,
-      },
+      vector: vec3.fromValues(0, 0, 0),
     },
       { width: 1000, depth: 1000, widthSegments: 5, depthSegments: 5 }
     );
@@ -53,13 +64,13 @@ export default class MainGame extends Engine {
     // console.error(" Array Array Byte")
     // this._plane._material = Materials.color({ gl: Engine._gl.gl, clr: [100, 100, 202, 0.6] });
 
-    for (let p = 0; p < 1000; p++) {
-      let newBlock = new Block({ x: getRandom(), y: getRandom(), z: getRandom() }, { x: 10, y: 10, z: 10 }, { x: 0, y: 0, z: 0 })
+    for (let p = 0; p < 100; p++) {
+      let newBlock = new Block(vec3.fromValues(getRandom(), getRandom(), getRandom()), vec3.fromValues(10, 10, 10), vec3.fromValues(0, 0, 0))
       newBlock._material = Materials.color({ clr: [randomByteColor(), randomByteColor()] });
 
       this._squares.push(newBlock)
       let random = getRandomArbitrary(3, 100)
-      let cone = new Cone({ radius: 6, angles: random, height: 20 }, { x: getRandom(), y: getRandom(), z: getRandom() }, { x: 2, y: 1, z: 2 })
+      let cone = new Cone({ radius: 6, angles: random, height: 20 }, vec3.fromValues(getRandom(), getRandom(), getRandom()), vec3.fromValues(1, 1, 1))
       let cl = []
       for (let i = 0; i < random; i++) {
         cl.push(randomByteColor())
@@ -119,31 +130,30 @@ export default class MainGame extends Engine {
     Engine._gl.gl.clearColor(0.0, 0.0, 0.0, 0); // Clear to black, fully opaque
     Engine._gl.gl.enable(Engine._gl.gl.DEPTH_TEST); // Enable depth testing
     Engine._gl.gl.clear(Engine._gl.gl.COLOR_BUFFER_BIT | Engine._gl.gl.DEPTH_BUFFER_BIT);
-    this._camera.generateMatrixOfView();
 
 
 
-    this._squares.forEach((square: Figure) => {
-      square.rotateX = 1
-      square.rotateY = 1
-      square.rotateZ = 0.5
-      // square._material = Materials.color({ clr: [] });
-      if (square._type == "block") {
-        let random = getRandomArbitrary(3, 100)
-        let cl = []
-        for (let i = 0; i < 6; i++) {
-          cl.push(randomByteColor())
-        }
-        square._material = Materials.color({ clr: cl });
-      } else {
-        let cl = []
-        for (let i = 0; i < square._angles; i++) {
-          cl.push(randomByteColor())
-        }
-        square._material = Materials.color({ clr: cl });
+    // this._squares.forEach((square: Figure) => {
+    //   square.rotateX = 1
+    //   square.rotateY = 1
+    //   square.rotateZ = 0.5
+    //   // square._material = Materials.color({ clr: [] });
+    //   if (square._type == "block") {
+    //     let random = getRandomArbitrary(3, 100)
+    //     let cl = []
+    //     for (let i = 0; i < 6; i++) {
+    //       cl.push(randomByteColor())
+    //     }
+    //     square._material = Materials.color({ clr: cl });
+    //   } else {
+    //     let cl = []
+    //     for (let i = 0; i < square._angles; i++) {
+    //       cl.push(randomByteColor())
+    //     }
+    //     square._material = Materials.color({ clr: cl });
 
-      }
-    });
+    //   }
+    // });
 
 
     this._plane.draw(this._camera);

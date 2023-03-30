@@ -1,16 +1,23 @@
-import FirstPersonCamera from "../components/cameras/FirstPersonCamera";
+// import FirstPersonCamera from "../components/cameras/FirstPersonCamera";
+import FreeMoveCamera from "../components/cameras/FPSCamera";
 import Materials from "../components/Materials";
 import { Engine } from "../Engine";
-import { FigureExtender } from "./FigureExtender";
+import { mat4, vec3 } from "../math/gl-matrix";
 import { extendedFloat32Array } from "./interfaces/AdditionalInterface";
 import { programArray, WebGlWProgram } from "./interfaces/WebglExtender";
 import Matrix4D from "./Matrix4D";
 
-export class Figure extends FigureExtender {
+export class Figure {
     public _UUID: string;
     public _gl: WebGlWProgram;
     public _material?: Materials;
     public _type?: string
+
+    public _vector?: vec3;
+    public _scale?: vec3;
+    public _rotationInDeg?: vec3;
+    public _matrix4D?: Matrix4D
+    public _modelMatrix?: mat4
 
     public _positions?: Float32Array
     public _indices?: Uint16Array
@@ -25,20 +32,22 @@ export class Figure extends FigureExtender {
     _prg: programArray
     prg: WebGLProgram
 
+
     _changeMaterial: boolean
     _changePosition: boolean
     private _positionBuffer: WebGLBuffer;
     private _colorBuffer: WebGLBuffer;
     private _indexBuffer: WebGLBuffer;
     private _bindedVertex: boolean;
-    constructor(vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D) {
-        super();
+    constructor(vector?: vec3, scale?: vec3, rotation?: vec3) {
         this._UUID = generateUUID()
-        Engine._gl
+        this._vector = vector || vec3.fromValues(0, 0, 0)
+        this._scale = scale || vec3.fromValues(1, 1, 1)
+        this._rotationInDeg = rotation || vec3.fromValues(0, 0, 0)
 
-        this.setVector(vector || { x: 0, y: 0, z: 0 })
-        this.setScale(scale || { x: 1, y: 1, z: 1 })
-        this.setRotations(rotation || { x: 0, y: 0, z: 0 })
+        // this.setVector(vector || { x: 0, y: 0, z: 0 })
+        // this.setScale(scale || { x: 1, y: 1, z: 1 })
+        // this.setRotations(rotation || { x: 0, y: 0, z: 0 })
         this._baseIndices = null
         this.updateMatrix()
         this._bindedVertex = false
@@ -48,6 +57,29 @@ export class Figure extends FigureExtender {
         Engine._gl.gl.linkProgram(this.prg)
 
     }
+    public updateMatrix(): void {
+        let modelMatrix = mat4.create()
+
+        modelMatrix = mat4.translate(modelMatrix, modelMatrix, this._vector)
+        modelMatrix = mat4.scale(modelMatrix, modelMatrix, this._scale)
+        modelMatrix = mat4.rotateX(modelMatrix, modelMatrix, this._rotationInDeg[0])
+        modelMatrix = mat4.rotateY(modelMatrix, modelMatrix, this._rotationInDeg[1])
+        modelMatrix = mat4.rotateY(modelMatrix, modelMatrix, this._rotationInDeg[2])
+        this._modelMatrix = modelMatrix
+    }
+
+    public updateTransaltionMatrix(): void {
+        this._modelMatrix = mat4.translate(this._modelMatrix, this._modelMatrix, this._vector)
+    }
+    public updateScaleMatrix(): void {
+        this._modelMatrix = mat4.translate(this._modelMatrix, this._modelMatrix, this._scale)
+    }
+    public updateRotationMatrix(): void {
+        this._modelMatrix = mat4.rotateY(this._modelMatrix, this._modelMatrix, this._rotationInDeg[1])
+
+        this._modelMatrix = mat4.rotateX(this._modelMatrix, this._modelMatrix, this._rotationInDeg[0])
+        this._modelMatrix = mat4.rotateZ(this._modelMatrix, this._modelMatrix, this._rotationInDeg[2])
+    }
     initBuffer(): void {
         this._positionBuffer = Engine._gl.gl.createBuffer()
         this._indexBuffer = Engine._gl.gl.createBuffer();
@@ -56,13 +88,14 @@ export class Figure extends FigureExtender {
         this._faceC = this.createAugmentedTypedArray(4, 0 || this._indices.length, Uint8Array)
 
     }
-    draw(_camera: FirstPersonCamera): void {
+    draw(_camera: FreeMoveCamera): void {
         // console.log(_prg);
-        let mvMatrix = this._matrix4D.multiplyMatrices(_camera._viewProjection, this._modelMatrix)
+        let mvMatrix = mat4.create();
+        mat4.multiply(mvMatrix, _camera._viewProjection, this._modelMatrix)
         // Tell WebGL to use our program when drawing
         const modelViewMatrixA = Engine._gl.programs.returnUniform(Engine._gl.gl, this.prg, 'uModelViewMatrix')
 
-        Engine._gl.gl.uniformMatrix4fv(modelViewMatrixA, false, mvMatrix);
+        Engine._gl.gl.uniformMatrix4fv(modelViewMatrixA, false, mat4.convertToFloat(mvMatrix));
 
         if (!this._bindedVertex || Engine._gl.lastBufferedType != this._type || Engine._gl.anglesFigure != this._angles) {
             Engine._gl.lastBufferedType = this._type

@@ -1,4 +1,5 @@
-import FirstPersonCamera from "../components/cameras/FirstPersonCamera";
+// import FirstPersonCamera from "../components/cameras/FirstPersonCamera";
+import FreeMoveCamera from "../components/cameras/FPSCamera";
 import Materials from "../components/Materials";
 import { Vector3D } from "./Figure";
 import { programArray } from "./interfaces/WebglExtender";
@@ -14,7 +15,7 @@ export default interface FigureInterface {
     _scale?: Vector3D;
     _rotationInDeg?: Vector3D;
     _material?: Materials;
-    draw(_prgL: programArray, _camera: FirstPersonCamera): void
+    draw(_prgL: programArray, _camera: FreeMoveCamera): void
     scaleMe(vect: Vector3D): void
     addToPosition(vect: Vector3D): void
     addToRotation(vect: Vector3D): void

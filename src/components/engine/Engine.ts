@@ -2,8 +2,8 @@ import { sort } from "../../../node_modules/fast-sort/dist/sort.min";
 import { Figure } from "./addons/Figure";
 import { programArray, WebGlWProgram } from "./addons/interfaces/WebglExtender";
 import webGLutils from "./addons/webGLutils";
-import FirstPersonCamera from "./components/cameras/FirstPersonCamera";
-import FreeMoveCamera from "./components/cameras/FreeMoveCamera";
+// import FirstPersonCamera from "./components/cameras/FirstPersonCamera";
+import FreeMoveCamera from "./components/cameras/FPSCamera";
 import Materials from "./components/Materials";
 import Block from "./components/primitives/Block";
 import Cone from "./components/primitives/Cone";
@@ -91,7 +91,7 @@ export abstract class Engine {
 
     }
 
-    engineRender(camera: FreeMoveCamera | FirstPersonCamera, items?: any) {
+    engineRender(camera: FreeMoveCamera, items?: any) {
         let coneArray: Array<Cone> = [];
         let cubeArray: Array<Block> = [];
         if (items instanceof Array) {

@@ -6,7 +6,7 @@ export default class Block extends Figure {
     _subdivisionsAxis: number
     _subdivisionsHeight: number
     _radius: number
-    constructor(vector?: Vector3D, scale?: Vector3D, rotation?: Vector3D, material?: Materials) {
+    constructor(vector?: vec3, scale?: vec3, rotation?: vec3, material?: Materials) {
         super(vector, scale, rotation);
         this._type = "block"
         this._trianglesPerSide = 2
