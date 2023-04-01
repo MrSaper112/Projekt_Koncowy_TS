@@ -7,7 +7,7 @@ import { KeyboardAndMouse, Keys } from "../../addons/KeyboardAndMouse";
 import Matrix4D from "../../addons/Matrix4D";
 import RayCaster from "../../addons/RayCaster";
 import { Engine } from "../../Engine";
-import { mat4, quat, vec3 } from "../../math/gl-matrix";
+import { mat4, quat, vec3, vec4 } from "../../math/gl-matrix";
 import { xRotate, yRotate, zRotate } from "../../math/gl-matrix/Matrix4D";
 import Quat from "../../math/Quat";
 import Materials from "../Materials";
@@ -51,7 +51,7 @@ export default class FreeMoveCamera extends Camera {
         this._zNear = data.zNear || 0.1;
         this._zFar = data.zFar || 100000.0;
 
-        this._acceleration = data.acceleration || 100;
+        this._acceleration = data.acceleration || 1000;
         this._aroundSpeed = data.aroundSpeed || 0.05;
         this._vector = vector
 
@@ -74,6 +74,8 @@ export default class FreeMoveCamera extends Camera {
         //     this.generateMatrixOfView()
         // })
         this.generateMatrixOfView()
+        this.calculateFrustumPlanes()
+
     }
     generateMatrixOfView() {
         this._perspectiveMatrix = mat4.create()
@@ -206,8 +208,19 @@ export default class FreeMoveCamera extends Camera {
             }
             if (somethingChanged) {
                 this.generateMatrixOfView()
+                this.calculateFrustumPlanes()
+                // console.log(this.extractPlanes(this._modelMatrix))
             }
         }
 
+    }
+    calculateFrustumPlanes() {
+        var left = vec4.fromValues(this._viewProjection[3] + this._viewProjection[0], this._viewProjection[7] + this._viewProjection[4], this._viewProjection[11] + this._viewProjection[8], this._viewProjection[15] + this._viewProjection[12]);
+        var right = vec4.fromValues(this._viewProjection[3] - this._viewProjection[0], this._viewProjection[7] - this._viewProjection[4], this._viewProjection[11] - this._viewProjection[8], this._viewProjection[15] - this._viewProjection[12]);
+        var top = vec4.fromValues(this._viewProjection[3] - this._viewProjection[1], this._viewProjection[7] - this._viewProjection[5], this._viewProjection[11] - this._viewProjection[9], this._viewProjection[15] - this._viewProjection[13]);
+        var bottom = vec4.fromValues(this._viewProjection[3] + this._viewProjection[1], this._viewProjection[7] + this._viewProjection[5], this._viewProjection[11] + this._viewProjection[9], this._viewProjection[15] + this._viewProjection[13]);
+        var near = vec4.fromValues(this._viewProjection[3] + this._viewProjection[2], this._viewProjection[7] + this._viewProjection[6], this._viewProjection[11] + this._viewProjection[10], this._viewProjection[15] + this._viewProjection[14]);
+        var far = vec4.fromValues(this._viewProjection[3] - this._viewProjection[2], this._viewProjection[7] - this._viewProjection[6], this._viewProjection[11] - this._viewProjection[10], this._viewProjection[15] - this._viewProjection[14]);
+        this.frustumPlanes = [left, right, top, bottom, near, far]
     }
 }

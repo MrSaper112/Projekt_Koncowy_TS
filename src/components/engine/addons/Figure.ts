@@ -32,6 +32,7 @@ export class Figure {
     _prg: programArray
     prg: WebGLProgram
 
+    public boxBounding: { min: vec3, max: vec3 }
 
     _changeMaterial: boolean
     _changePosition: boolean
@@ -53,8 +54,7 @@ export class Figure {
         this._bindedVertex = false
 
         this.prg = Engine._gl.programs.shaders.color._prg
-        Engine._gl.gl.useProgram(this.prg)
-        Engine._gl.gl.linkProgram(this.prg)
+
 
     }
     public updateMatrix(): void {
@@ -70,15 +70,21 @@ export class Figure {
 
     public updateTransaltionMatrix(): void {
         this._modelMatrix = mat4.translate(this._modelMatrix, this._modelMatrix, this._vector)
+        this.calculateBoundingBox()
+
     }
     public updateScaleMatrix(): void {
         this._modelMatrix = mat4.translate(this._modelMatrix, this._modelMatrix, this._scale)
+        this.calculateBoundingBox()
+
     }
     public updateRotationMatrix(): void {
         this._modelMatrix = mat4.rotateY(this._modelMatrix, this._modelMatrix, this._rotationInDeg[1])
 
         this._modelMatrix = mat4.rotateX(this._modelMatrix, this._modelMatrix, this._rotationInDeg[0])
         this._modelMatrix = mat4.rotateZ(this._modelMatrix, this._modelMatrix, this._rotationInDeg[2])
+        this.calculateBoundingBox()
+
     }
     initBuffer(): void {
         this._positionBuffer = Engine._gl.gl.createBuffer()
@@ -87,6 +93,31 @@ export class Figure {
 
         this._faceC = this.createAugmentedTypedArray(4, 0 || this._indices.length, Uint8Array)
 
+        this.calculateBoundingBox()
+
+    }
+    calculateBoundingBox() {
+        // Initialize min and max vectors with high and low values
+        let min: vec3 = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        let max: vec3 = vec3.fromValues(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+        // Loop through all the points to find the minimum and maximum values
+        for (let i = 0; i < this._positions.length; i += 3) {
+            let p = vec3.fromValues(this._positions[i], this._positions[i + 1], this._positions[i + 2])
+            vec3.multiply(p, p, this._scale);
+            vec3.add(p, p, this._vector);
+
+            min[0] = Math.min(min[0], p[0]);
+            min[1] = Math.min(min[1], p[1]);
+            min[2] = Math.min(min[2], p[2]);
+
+            max[0] = Math.max(max[0], p[0]);
+            max[1] = Math.max(max[1], p[1]);
+            max[2] = Math.max(max[2], p[2]);
+        }
+
+        // Return the AABB
+        this.boxBounding = { min: min, max: max };
     }
     draw(_camera: FreeMoveCamera): void {
         // console.log(_prg);

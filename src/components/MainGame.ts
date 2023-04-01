@@ -64,7 +64,7 @@ export default class MainGame extends Engine {
     // console.error(" Array Array Byte")
     // this._plane._material = Materials.color({ gl: Engine._gl.gl, clr: [100, 100, 202, 0.6] });
 
-    for (let p = 0; p < 100; p++) {
+    for (let p = 0; p < 10000; p++) {
       let newBlock = new Block(vec3.fromValues(getRandom(), getRandom(), getRandom()), vec3.fromValues(10, 10, 10), vec3.fromValues(0, 0, 0))
       newBlock._material = Materials.color({ clr: [randomByteColor(), randomByteColor()] });
 
@@ -198,7 +198,7 @@ interface block {
   color?: string;
 }
 function getRandom() {
-  return Math.floor(Math.random() * 1000)
+  return Math.floor(Math.random() * 5000)
 }
 function randomHex() {
   return "#" + Math.floor(Math.random() * 16777215).toString(16);

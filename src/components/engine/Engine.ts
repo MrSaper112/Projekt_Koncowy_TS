@@ -7,6 +7,7 @@ import FreeMoveCamera from "./components/cameras/FPSCamera";
 import Materials from "./components/Materials";
 import Block from "./components/primitives/Block";
 import Cone from "./components/primitives/Cone";
+import { vec3, vec4 } from "./math/gl-matrix";
 
 export abstract class Engine {
     public _cnv: HTMLCanvasElement
@@ -54,6 +55,9 @@ export abstract class Engine {
             Engine._gl.programs = this._webGLutils.newProgram(gl)
             Engine._gl.gl = gl
 
+            Engine._gl.gl.useProgram(Engine._gl.programs.shaders.color._prg)
+            Engine._gl.gl.linkProgram(Engine._gl.programs.shaders.color._prg)
+
             console.log(Engine._gl);
 
             //             let f = () => {
@@ -95,55 +99,56 @@ export abstract class Engine {
         let coneArray: Array<Cone> = [];
         let cubeArray: Array<Block> = [];
         if (items instanceof Array) {
-            const sorted = sort(items).desc(u => u._type);
-            sorted.forEach((square: Figure) => {
+            items.forEach((square: Figure) => {
                 if (square instanceof Cone) coneArray.push(square);
                 if (square instanceof Block) cubeArray.push(square);
             });
         }
 
-        const coneArraySorted = sort(coneArray).desc(u => u._angles);
-        coneArraySorted.forEach((cube: Figure) => cube.draw(camera))
-        cubeArray.forEach((cube: Figure) => cube.draw(camera))
 
-        // // Convert to seconds
-        // now *= 0.001;
-        // // Subtract the previous time from the current time
-        // // console.log(now, then)
-        // var deltaTime = now - then
-        // // Remember the current time for the next frame.
-        // then = now;
+        let totalItems = items.length;
+        let visibleItems = 0
+        cubeArray.forEach((cube: Figure) => {
+            if (this.isAABBVisible(cube.boxBounding, camera.frustumPlanes)) {
+                visibleItems += 1
+                cube.draw(camera)
+            }
+        })
+        coneArray.forEach((cube: Figure) => {
+            if (this.isAABBVisible(cube.boxBounding, camera.frustumPlanes)) {
+                visibleItems += 1
+                cube.draw(camera)
 
-        // const gl = this._cnv.getContext("webgl");
-        // gl.clearColor(0.0, 0.0, 0.0, 0);  // Clear to black, fully opaque
-        // gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-
-        // // Clear the canvas before we start drawing on it.
-        // this._camera.calculate(deltaTime)
-        // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        // this.square.forEach((square) => {
-        //     square.draw(this._program,this._camera);
-        //     square.addToRotation({ x: 0, y: 0, z: speed * deltaTime });
-        // })
-        // let num = Date.now()
-        // this._fps.render(num)
-        // this._plane.draw(this._program, this._camera)
-        // // this.square[0].draw(this._program);
-        // // this.square[1].draw(this._program);
-        // // // if (this.time === 2) {
-        // // //     this.square[0].rotateMe({ x: 1, y: 1, z: 1 });
-        // // //     this._camera.updateX(1)
-        // // //     this.time = 0
-        // // // }
-        // // this.square[0].rotateMe({ x: 3, y: 3, z: 1 });
-        // // this.square[1].rotateMe({ x: 30, y: 30, z: 1 });
-        // this.time++
-        // // console.log("Czas leci!")
+            }
+        })
+        console.log("Total items: " + totalItems + " visible items: " + visibleItems)
 
 
         // requestAnimationFrame(() => this.render(new Date().getTime()))
     }
+    isAABBVisible(aabb: any, planes: Array<vec4>) {
+        // Transform the eight corner points of the AABB into view space
+        if (planes === undefined || aabb == undefined) return true;
+        for (let i = 0; i < 6; i++) {
+            const plane = planes[i];
+            const min = aabb.min;
+            const max = aabb.max;
 
+            const x = plane[0] > 0 ? max[0] : min[0];
+            const y = plane[1] > 0 ? max[1] : min[1];
+            const z = plane[2] > 0 ? max[2] : min[2];
+            // console.log(plane[3])
+            const distance = vec3.dot(plane, vec3.fromValues(x, y, z)) + plane[3]
+
+            if (distance < 0) {
+                // bounding box is fully outside the frustum, return false
+                return false;
+            }
+        }
+
+        // bounding box is either fully or partially inside the frustum, return true
+        return true;
+    }
 }
 
 let f = () => {
