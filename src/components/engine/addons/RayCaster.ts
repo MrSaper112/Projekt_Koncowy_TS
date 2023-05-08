@@ -1,4 +1,4 @@
-import { Vector3D } from "./Figure";
+import { Vector3D } from "../components/primitives/Figure";
 import FigureInterface from "./FiguresInterFace";
 
 export default class RayCaster {

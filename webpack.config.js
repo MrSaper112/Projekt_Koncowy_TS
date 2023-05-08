@@ -16,7 +16,12 @@ module.exports = {
     }),
   ],
   module: {
-    rules: [
+    rules: [{
+        test: /\.worker\.js$/,
+        use: {
+          loader: "worker-loader"
+        },
+      },
       {
         test: /\.tsx?$/,
         use: "ts-loader",
@@ -27,8 +32,8 @@ module.exports = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.txt$/i,
-        use: "raw-loader",
+        test: /\.(glsl|vs|fs)$/,
+        loader: 'ts-shader-loader'
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,

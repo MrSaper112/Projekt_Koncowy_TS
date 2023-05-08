@@ -1,7 +1,7 @@
 // import FirstPersonCamera from "../components/cameras/FirstPersonCamera";
 import FreeMoveCamera from "../components/cameras/FPSCamera";
 import Materials from "../components/Materials";
-import { Vector3D } from "./Figure";
+import { Vector3D } from "../components/primitives/Figure";
 import { programArray } from "./interfaces/WebglExtender";
 import Matrix4D from "./Matrix4D";
 

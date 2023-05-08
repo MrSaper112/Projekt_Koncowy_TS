@@ -12,6 +12,7 @@ export default class PlaneGenerator {
         for (let x = 0; x < body.length; x++) {
             body[x].classList.add("display")
         }
+
         this._selected = ""
         this._datatype = ["texture", "color"]
         this._colorInput = ''

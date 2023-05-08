@@ -3,7 +3,7 @@ import Matrix4D from "../../addons/Matrix4D";
 import Materials from "../Materials";
 import cobble from '../../textures/cobble.png'
 // import FirstPersonCamera from "../cameras/FirstPersonCamera";
-import { Figure, Vector3D } from "../../addons/Figure";
+import { Figure, Vector3D } from "./Figure";
 
 export default class Plane extends Figure {
     _dat: { width: number, depth: number, widthSegments: number, depthSegments: number }
@@ -18,6 +18,7 @@ export default class Plane extends Figure {
         this._positions = working.position
         this._textureCoordinates = working.textureCoordinates
         this._indices = working.indices
+        this._normals = working.normals
         this.initBuffer()
 
     }
@@ -69,7 +70,8 @@ export default class Plane extends Figure {
             position: positions,
             normal: normals,
             textureCoordinates: texcoords,
-            indices: indices
+            indices: indices,
+            normals: normals
         };
     }
 

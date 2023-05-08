@@ -1,4 +1,4 @@
-export default class FPSIndicator{
+export default class FPSIndicator {
     private _container: HTMLDivElement;
     private _fpsContainer: HTMLDivElement;
     private _averageContainer: HTMLDivElement;
@@ -10,11 +10,12 @@ export default class FPSIndicator{
     private _maxFrames: number;
     private _totalFPS: number;
     private _then: number;
-    constructor(){
+    private _timer: number;
+    constructor() {
         this._container = document.createElement("div");
         let info = document.createElement("span")
         info.innerText = 'FPS: '
-    
+
         this._actualFPS = document.createElement("span")
         info.appendChild(this._actualFPS)
 
@@ -24,15 +25,15 @@ export default class FPSIndicator{
         this._averageFPS = document.createElement("span")
         info2.appendChild(this._averageFPS)
 
-        info.style.display ="flex"
-        info2.style.display ="flex"
-        
+        info.style.display = "flex"
+        info2.style.display = "flex"
+
         info.style.fontSize = "15px"
-        info.style.color = "black"
+        info.style.color = "purple"
         info.style.fontFamily = "Arial, Helvetica, sans-serif"
 
         info2.style.fontSize = "15px"
-        info2.style.color = "black"
+        info2.style.color = "purple"
         info2.style.fontFamily = "Arial, Helvetica, sans-serif"
 
         this._container.appendChild(info)
@@ -48,31 +49,39 @@ export default class FPSIndicator{
         this._container.style.position = "absolute";
         this._container.style.top = "10px";
         this._container.style.marginLeft = "80%";
+        this._timer = 0
 
         document.body.appendChild(this._container);
     }
-    render(now: number){
+    render(now: number) {
         now *= 0.001;                          // convert to seconds
         const deltaTime = now - this._then;          // compute time since last frame
         this._then = now;                            // remember time for next frame
-        const fps = 1 / deltaTime;             // compute frames per second
 
-        this._actualFPS.textContent = fps.toFixed(1);  // update fps display
+        this._timer += deltaTime * 1000
+        if (this._timer >= 50) {
+            this._timer = 0
+            const fps = 1 / deltaTime;             // compute frames per second
 
-        // add the current fps and remove the oldest fps
-        this._totalFPS += fps - (this._frameTimes[this._frameCursor] || 0);
+            this._actualFPS.textContent = fps.toFixed(1);  // update fps display
 
-        // record the newest fps
-        this._frameTimes[this._frameCursor++] = fps;
+            // add the current fps and remove the oldest fps
+            this._totalFPS += fps - (this._frameTimes[this._frameCursor] || 0);
 
-        // needed so the first N frames, before we have maxFrames, is correct.
-        this._numFrames = Math.max(this._numFrames, this._frameCursor);
+            // record the newest fps
+            this._frameTimes[this._frameCursor++] = fps;
 
-        // wrap the cursor
-        this._frameCursor %= this._maxFrames;
+            // needed so the first N frames, before we have maxFrames, is correct.
+            this._numFrames = Math.max(this._numFrames, this._frameCursor);
 
-        const averageFPS = this._totalFPS / this._numFrames;
+            // wrap the cursor
+            this._frameCursor %= this._maxFrames;
 
-        this._averageFPS.textContent = averageFPS.toFixed(1);  // update avg display
+            const averageFPS = this._totalFPS / this._numFrames;
+
+            this._averageFPS.textContent = averageFPS.toFixed(1);  // update avg display
+        }
+
+
     }
 }
